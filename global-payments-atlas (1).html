@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The World Pays — Global Payment Atlas 2025</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Fira+Code:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0b1a13;
+    --parchment: #f4ede0;
+    --gold: #c9922a;
+    --gold-light: #e8b96a;
+    --teal: #2a9d8f;
+    --coral: #e76f51;
+    --amber: #f4a261;
+    --slate: #2c3e50;
+    --muted: #8c9ba5;
+    --card-bg: #112218;
+    --border: rgba(201,146,42,0.25);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--ink);
+    color: var(--parchment);
+    font-family: 'Instrument Sans', sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* ── SLIDE ENGINE ── */
+  #deck { width: 100%; height: 100%; position: relative; }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+    overflow: hidden;
+  }
+  .slide.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* ── NAV ── */
+  #nav {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    z-index: 100;
+    background: rgba(11,26,19,0.85);
+    border: 1px solid var(--border);
+    padding: 10px 20px;
+    border-radius: 100px;
+    backdrop-filter: blur(10px);
+  }
+  #nav button {
+    background: none;
+    border: none;
+    color: var(--gold-light);
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    padding: 4px 12px;
+    border-radius: 20px;
+    transition: background 0.2s;
+  }
+  #nav button:hover { background: rgba(201,146,42,0.15); }
+  #nav .dots { display: flex; gap: 6px; padding: 0 8px; }
+  #nav .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  #nav .dot.on { background: var(--gold); }
+  #slide-counter {
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    padding: 0 4px;
+  }
+
+  /* ── SHARED TYPOGRAPHY ── */
+  .eyebrow {
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .display {
+    font-family: 'Cormorant Garamond', serif;
+    line-height: 1.05;
+    font-weight: 300;
+  }
+  .mono { font-family: 'Fira Code', monospace; }
+  .tag {
+    display: inline-block;
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .tag-teal { background: rgba(42,157,143,0.2); color: var(--teal); border: 1px solid rgba(42,157,143,0.4); }
+  .tag-coral { background: rgba(231,111,81,0.15); color: var(--coral); border: 1px solid rgba(231,111,81,0.4); }
+  .tag-gold { background: rgba(201,146,42,0.15); color: var(--gold-light); border: 1px solid var(--border); }
+  .tag-amber { background: rgba(244,162,97,0.15); color: var(--amber); border: 1px solid rgba(244,162,97,0.3); }
+
+  /* ── SLIDE STRUCTURAL PATTERNS ── */
+  .slide-header {
+    padding: 40px 56px 0;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .slide-body {
+    flex: 1;
+    padding: 28px 56px;
+    overflow: auto;
+  }
+
+  /* ── GRID HELPERS ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 20px;
+    position: relative;
+  }
+  .card-accent { border-left: 3px solid var(--gold); }
+  .card-teal { border-left: 3px solid var(--teal); }
+  .card-coral { border-left: 3px solid var(--coral); }
+
+  .stat-huge {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px;
+    font-weight: 300;
+    color: var(--gold-light);
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+  .stat-sub {
+    font-size: 12px;
+    color: rgba(244,237,224,0.6);
+    margin-top: 4px;
+  }
+
+  /* ─────────────────────────────────────────
+     SLIDE 01 — COVER
+  ───────────────────────────────────────── */
+  #s01 {
+    background: radial-gradient(ellipse at 30% 60%, #1a3a25 0%, var(--ink) 60%);
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 80px;
+  }
+  #s01 .cover-inner { max-width: 780px; }
+  #s01 h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 90px;
+    font-weight: 300;
+    line-height: 0.95;
+    color: var(--parchment);
+    margin: 16px 0 24px;
+  }
+  #s01 h1 em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+  #s01 .sub {
+    font-size: 15px;
+    color: rgba(244,237,224,0.65);
+    line-height: 1.6;
+    max-width: 520px;
+    margin-bottom: 40px;
+  }
+  .cover-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cover-tags .tag { font-size: 10px; padding: 5px 12px; }
+
+  /* meridian line decoration */
+  #s01::before {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 42%;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 30px,
+      rgba(201,146,42,0.04) 30px,
+      rgba(201,146,42,0.04) 31px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 40px,
+      rgba(201,146,42,0.04) 40px,
+      rgba(201,146,42,0.04) 41px
+    );
+    border-left: 1px solid var(--border);
+  }
+  #s01::after {
+    content: '2 0 2 5';
+    position: absolute;
+    right: 40px; bottom: 36px;
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    opacity: 0.6;
+  }
+
+  /* ─────────────────────────────────────────
+     SLIDE 02 — BIG NUMBERS
+  ───────────────────────────────────────── */
+  #s02 { background: var(--ink); }
+  .pulse-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--teal), var(--gold), var(--coral));
+    border-radius: 2px;
+    margin-bottom: 32px;
+    animation: pulse-width 3s ease infinite;
+  }
+  @keyframes pulse-width {
+    0%,100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+  .num-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .num-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 22px 20px;
+  }
+  .num-card .big {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 44px;
+    font-weight: 300;
+    color: var(--gold-light);
+    line-height: 1;
+  }
+  .num-card .unit {
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    color: var(--muted);
+    margin-left: 2px;
+  }
+  .num-card .desc {
+    font-size: 11px;
+    color: rgba(244,237,224,0.55);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+  .num-card .delta {
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: var(--teal);
+    margin-top: 6px;
+  }
+
+  .flow-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 16px;
+  }
+  .flow-bar-wrap { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 18px 20px; }
+  .flow-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .flow-label { font-family: 'Fira Code', monospace; font-size: 10px; color: var(--parchment); width: 80px; flex-shrink: 0; }
+  .flow-bar { height: 8px; border-radius: 4px; flex: 1; }
+  .flow-val { font-family: 'Fira Code', monospace; font-size: 10px; color: var(--gold-light); width: 44px; text-align: right; }
+
+  /* ─────────────────────────────────────────
+     SLIDE 03 — REGIONAL MAP
+  ───────────────────────────────────────── */
+  #s03 { background: linear-gradient(135deg, #0b1a13 0%, #0d2118 100%); }
+  .region-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 14px;
+    height: calc(100vh - 160px);
+  }
+  .region-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .region-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .rc-apac::before { background: linear-gradient(90deg, var(--teal), #42c3b0); }
+  .rc-china::before { background: linear-gradient(90deg, #e63946, #ff8fa3); }
+  .rc-india::before { background: linear-gradient(90deg, #f77f00, var(--amber)); }
+  .rc-africa::before { background: linear-gradient(90deg, #588157, #a3b18a); }
+  .rc-latam::before { background: linear-gradient(90deg, #7b2d8b, #c77dff); }
+  .rc-west::before { background: linear-gradient(90deg, #0077b6, #48cae4); }
+
+  .region-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--parchment);
+  }
+  .region-leader {
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    color: var(--gold-light);
+    padding: 3px 8px;
+    background: rgba(201,146,42,0.1);
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+  .region-stat { font-size: 11px; color: rgba(244,237,224,0.65); line-height: 1.5; }
+  .region-share {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 300;
+    color: var(--gold-light);
+    margin-top: auto;
+  }
+  .region-share span { font-size: 14px; color: var(--muted); font-family: 'Fira Code', monospace; }
+
+  /* ─────────────────────────────────────────
+     SLIDE 04 — PAYMENT SYSTEM PROFILES
+  ───────────────────────────────────────── */
+  #s04 { background: var(--ink); }
+  .sys-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .sys-table th {
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    background: rgba(201,146,42,0.05);
+  }
+  .sys-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(201,146,42,0.08);
+    color: rgba(244,237,224,0.8);
+    vertical-align: top;
+  }
+  .sys-table tr:hover td { background: rgba(201,146,42,0.04); }
+  .sys-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    color: var(--parchment);
+    display: block;
+  }
+  .sys-region {
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    color: var(--muted);
+  }
+  .bar-cell { padding-top: 16px !important; }
+  .inline-bar { height: 6px; border-radius: 3px; margin-bottom: 2px; }
+  .bar-label { font-family: 'Fira Code', monospace; font-size: 9px; color: var(--gold-light); }
+
+  /* ─────────────────────────────────────────
+     SLIDE 05 — FINANCIAL INCLUSION
+  ───────────────────────────────────────── */
+  #s05 { background: linear-gradient(160deg, #0b1a13, #0e1f1a); }
+  .inclusion-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; height: 100%; }
+  .bubble-map { display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; padding: 10px 0; }
+  .bubble {
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .bubble:hover { transform: scale(1.05); z-index: 10; }
+  .bubble .b-pct {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    color: white;
+    line-height: 1;
+  }
+  .bubble .b-label {
+    font-family: 'Fira Code', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    line-height: 1.2;
+  }
+  .inclusion-right { display: flex; flex-direction: column; gap: 14px; }
+  .inc-stat { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px; }
+  .inc-stat h4 { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; color: var(--parchment); margin-bottom: 6px; }
+  .inc-stat p { font-size: 11px; color: rgba(244,237,224,0.6); line-height: 1.5; }
+  .inc-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--coral); }
+
+  /* ─────────────────────────────────────────
+     SLIDE 06 — LOCAL vs GLOBAL
+  ───────────────────────────────────────── */
+  #s06 { background: var(--ink); }
+  .versus-layout { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; height: 100%; }
+  .versus-col { padding: 16px 0; }
+  .versus-divider {
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+    margin: 0 24px;
+    position: relative;
+  }
+  .versus-divider::before {
+    content: 'VS';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-style: italic;
+    color: var(--gold);
+    background: var(--ink);
+    padding: 8px 4px;
+  }
+  .vs-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; margin-bottom: 16px; }
+  .vs-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; margin-bottom: 12px; }
+  .vs-item h5 { font-family: 'Fira Code', monospace; font-size: 9px; color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .vs-item p { font-size: 11px; color: rgba(244,237,224,0.7); line-height: 1.5; }
+  .vs-pro { border-left: 3px solid var(--teal); }
+  .vs-con { border-left: 3px solid var(--coral); }
+  .case-study {
+    background: rgba(42,157,143,0.08);
+    border: 1px solid rgba(42,157,143,0.25);
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .case-study .cs-tag { font-family: 'Fira Code', monospace; font-size: 9px; color: var(--teal); text-transform: uppercase; letter-spacing: 0.1em; }
+  .case-study p { font-size: 11px; color: rgba(244,237,224,0.75); margin-top: 4px; line-height: 1.5; }
+
+  /* ─────────────────────────────────────────
+     SLIDE 07 — TECHNICAL BACKBONE
+  ───────────────────────────────────────── */
+  #s07 { background: linear-gradient(200deg, #0b1a13, #091510); }
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    height: calc(100vh - 170px);
+  }
+  .tech-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .tech-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+  .tech-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--parchment);
+  }
+  .tech-subtitle {
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .tech-meta { display: flex; flex-wrap: wrap; gap: 5px; margin: 4px 0; }
+  .tech-desc { font-size: 11px; color: rgba(244,237,224,0.65); line-height: 1.5; flex: 1; }
+  .tech-examples { font-family: 'Fira Code', monospace; font-size: 10px; color: var(--gold-light); }
+
+  /* ─────────────────────────────────────────
+     SLIDE 08 — MEASUREMENT FRAMEWORK
+  ───────────────────────────────────────── */
+  #s08 { background: var(--ink); }
+  .measure-layout { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .measure-col h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .measure-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+  .measure-num {
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    background: rgba(201,146,42,0.1);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 3px 7px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .measure-text h5 {
+    font-size: 12px;
+    color: var(--parchment);
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .measure-text p {
+    font-size: 10px;
+    color: rgba(244,237,224,0.5);
+    line-height: 1.5;
+  }
+  .measure-col.financial h3 { color: var(--gold-light); }
+  .measure-col.economic h3 { color: var(--teal); }
+  .measure-col.societal h3 { color: var(--coral); }
+
+  /* ─────────────────────────────────────────
+     SLIDE 09 — CULTURAL EQUITY
+  ───────────────────────────────────────── */
+  #s09 { background: linear-gradient(135deg, #100e1a, #0b1a13); }
+  .equity-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; height: 100%; }
+  .equity-left { display: flex; flex-direction: column; gap: 14px; }
+  .equity-right { display: flex; flex-direction: column; gap: 14px; }
+  .equity-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 18px;
+  }
+  .equity-card h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--parchment);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .equity-card p { font-size: 11px; color: rgba(244,237,224,0.65); line-height: 1.6; }
+  .equity-quote {
+    background: rgba(201,146,42,0.06);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 22px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--parchment);
+    line-height: 1.5;
+  }
+  .equity-quote cite {
+    display: block;
+    margin-top: 10px;
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    font-style: normal;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .corridor-table { width: 100%; font-size: 11px; }
+  .corridor-table td { padding: 7px 10px; border-bottom: 1px solid rgba(201,146,42,0.07); }
+  .corridor-table td:first-child { color: var(--parchment); font-weight: 500; }
+  .corridor-table td:last-child { font-family: 'Fira Code', monospace; font-size: 10px; }
+
+  /* ─────────────────────────────────────────
+     SLIDE 10 — SYNTHESIS
+  ───────────────────────────────────────── */
+  #s10 {
+    background: radial-gradient(ellipse at 70% 30%, #1a2e20 0%, var(--ink) 65%);
+    justify-content: center;
+    padding: 0 64px;
+  }
+  .synthesis-inner { max-width: 900px; }
+  .thesis {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 38px;
+    font-weight: 300;
+    line-height: 1.25;
+    color: var(--parchment);
+    margin-bottom: 36px;
+    border-left: 3px solid var(--gold);
+    padding-left: 28px;
+  }
+  .thesis em { font-style: italic; color: var(--gold-light); }
+  .implications {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .impl-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .impl-card .impl-icon { font-size: 20px; margin-bottom: 8px; }
+  .impl-card h5 { font-size: 12px; color: var(--gold-light); margin-bottom: 6px; font-weight: 500; }
+  .impl-card p { font-size: 10px; color: rgba(244,237,224,0.55); line-height: 1.5; }
+  .source-line {
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- SLIDE 01 — COVER                       -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="slide active" id="s01">
+    <div class="cover-inner" style="padding-top: 120px;">
+      <div class="eyebrow">Global Payment Atlas</div>
+      <h1>The<br><em>World</em><br>Pays</h1>
+      <p class="sub">A geopolitical cartography of money movement — adoption, architecture, and the equity gaps that define who gets to participate in the global economy.</p>
+      <div class="cover-tags">
+        <span class="tag tag-teal">Financial Inclusion</span>
+        <span class="tag tag-gold">Local vs Global</span>
+        <span class="tag tag-coral">Cultural Equity</span>
+        <span class="tag tag-amber">Economic Efficiency</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- SLIDE 02 — BIG NUMBERS                 -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="slide" id="s02">
+    <div class="slide-header">
+      <div>
+        <div class="eyebrow">01 — Global Snapshot</div>
+        <div class="display" style="font-size:32px">By the Numbers, 2024–2025</div>
+      </div>
+      <div class="tag tag-gold">World Payments · 2025</div>
+    </div>
+    <div class="slide-body">
+      <div class="pulse-bar"></div>
+      <div class="num-grid">
+        <div class="num-card">
+          <div class="big">$18.7<span class="unit">T</span></div>
+          <div class="desc">Digital payment spend globally in 2024 — an 11× increase from $1.7T in 2014</div>
+          <div class="delta">↑ Worldpay 2025</div>
+        </div>
+        <div class="num-card">
+          <div class="big">2.7<span class="unit">B</span></div>
+          <div class="desc">People using mobile payments in 2024, with China at 96% adult penetration</div>
+          <div class="delta">↑ Business of Apps 2026</div>
+        </div>
+        <div class="num-card">
+          <div class="big">1.3<span class="unit">B</span></div>
+          <div class="desc">Adults still unbanked globally — 21% of world adults, concentrated in Africa &amp; APAC</div>
+          <div class="delta" style="color:var(--coral)">⚠ World Bank Findex 2025</div>
+        </div>
+        <div class="num-card">
+          <div class="big">4.26<span class="unit">%</span></div>
+          <div class="desc">Avg cost to send $200 cross-border in Q1 2025, down from 7.36% in 2020</div>
+          <div class="delta">↓ Still 2× the UN SDG target of 3%</div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <div class="flow-bar-wrap">
+          <div class="eyebrow" style="margin-bottom:14px">E-Commerce Payment Method Share · 2024</div>
+          <div class="flow-item">
+            <div class="flow-label">Digital Wallets</div>
+            <div class="flow-bar" style="width:53%;background:linear-gradient(90deg,var(--teal),#42c3b0)"></div>
+            <div class="flow-val">53%</div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-label">Credit Cards</div>
+            <div class="flow-bar" style="width:20%;background:var(--gold)"></div>
+            <div class="flow-val">20%</div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-label">Debit Cards</div>
+            <div class="flow-bar" style="width:12%;background:var(--amber)"></div>
+            <div class="flow-val">12%</div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-label">A2A / RTP</div>
+            <div class="flow-bar" style="width:10%;background:#7b2d8b"></div>
+            <div class="flow-val">10%</div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-label">BNPL</div>
+            <div class="flow-bar" style="width:5%;background:var(--coral)"></div>
+            <div class="flow-val">5%</div>
+          </div>
+          <div class="flow-item">
+            <div class="flow-label">Cash / Other</div>
+            <div class="flow-bar" style="width:2%;background:var(--muted)"></div>
+            <div class="flow-val">&lt;2%</div>
+          </div>
+          <div style="font-size:9px;color:var(--muted);font-family:'Fira Code',monospace;margin-top:10px">Source: Worldpay Global Payments Report 2025</div>
+        </div>
+        <div class="num-card">
+          <div class="eyebrow">Transaction Volumes</div>
+          <div class="big" style="font-size:36px">172<span class="unit">B</span></div>
+          <div class="stat-label">UPI India (2024)</div>
+          <div style="height:10px"></div>
+          <div class="big" style="font-size:36px">260<span class="unit">B</span></div>
+          <div class="stat-label">Visa Global (2024)</div>
+        </div>
+        <div class="num-card">
+          <div class="eyebrow">Cash Decline</div>
+          <div class="big" style="font-size:36px">11<span class="unit">%</span></div>
+          <div class="stat-label">Cash share by 2030</div>
+          <div class="stat-sub">Down from 44% in 2014. In US: already at 5% of consumer payment value.</div>
+          <div class="delta" style="margin-top:8px">↓ −2% annually (Worldpay)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- SLIDE 03 — REGIONAL MAP                -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="slide" id="s03">
+    <div class="slide-header">
+      <div>
+        <div class="eyebrow">02 — Geographies of Money</div>
+        <div class="display" style="font-size:32px">Six Payment Worlds</div>
+      </div>
+      <div class="tag tag-teal">Regional Breakdown</div>
+    </div>
+    <div class="slide-body" style="padding-top:18px">
+      <div class="region-grid">
+        <div class="region-card rc-china">
+          <div class="region-name">China</div>
+          <span class="region-leader">Alipay · WeChat Pay · UnionPay</span>
+          <div class="region-stat">Super-app closed-loop ecosystem. QR-code dominant. 92% adults use Alipay, 85% WeChat Pay. Combined 2024 volume: <strong>$80T</strong> — the world's largest single-country mobile payment pool.</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+            <span class="tag tag-teal">Online</span><span class="tag tag-teal">Offline QR</span><span class="tag tag-gold">Closed Ecosystem</span>
+          </div>
+          <div class="region-share">96<span>% mobile adoption</span></div>
+        </div>
+
+        <div class="region-card rc-india">
+          <div class="region-name">India</div>
+          <span class="region-leader">UPI · PhonePe · RuPay</span>
+          <div class="region-stat">State-built open rail. Zero consumer cost. 172B transactions in 2024 (+46% YoY). UPI = 49% of global real-time payments volume. Pix-like speed, government-mandated scale.</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+            <span class="tag tag-teal">Open Rail</span><span class="tag tag-amber">Free to User</span><span class="tag tag-gold">Instant</span>
+          </div>
+          <div class="region-share">75<span>% of all India txns</span></div>
+        </div>
+
+        <div class="region-card rc-latam">
+          <div class="region-name">Latin America</div>
+          <span class="region-leader">PIX · Mercado Pago · SPEI</span>
+          <div class="region-stat">Brazil's PIX broke 252M transactions in a single day. 40% e-commerce share. Mercado Pago: 50M+ users. Still 60% cash dependency across the region — highest globally.</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+            <span class="tag tag-coral">Cash Heavy</span><span class="tag tag-teal">RTP Growing</span><span class="tag tag-amber">Informal Economy</span>
+          </div>
+          <div class="region-share">40<span>% PIX e-comm share</span></div>
+        </div>
+
+        <div class="region-card rc-west">
+          <div class="region-name">North America &amp; Europe</div>
+          <span class="region-leader">Visa · Mastercard · SEPA · Wero</span>
+          <div class="region-stat">Card-dominant with strong Open Banking push. US: 70% card e-comm. EU Instant growing from 3B → 30B txns by 2028. Wero rising as European sovereignty play vs US card networks.</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+            <span class="tag tag-gold">Card Rails</span><span class="tag tag-teal">Open Banking</span><span class="tag tag-amber">BNPL Rise</span>
+          </div>
+          <div class="region-share">37<span>% APAC market share</span></div>
+        </div>
+
+        <div class="region-card rc-africa">
+          <div class="region-name">Sub-Saharan Africa</div>
+          <span class="region-leader">M-Pesa · MTN MoMo · Orange Money</span>
+          <div class="region-stat">World leader in mobile money: 40% of adults hold a mobile money account — the global highest. M-Pesa: $310B volume in FY2024. 90% penetration in Kenya. Feature-phone first.</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+            <span class="tag tag-teal">Mobile Money</span><span class="tag tag-coral">High Remittance Cost</span><span class="tag tag-amber">USSD / Feature Phone</span>
+          </div>
+          <div class="region-share">40<span>% mobile money adults</span></div>
+        </div>
+
+        <div class="region-card" style="border-color:rgba(244,162,97,0.3)">
+          <div class="region-card-inner" style="background:none;padding:0">
+          <div class="region-name">Middle East &amp; SE Asia</div>
+          <span class="region-leader">STC Pay · GCash · GrabPay · Fawry</span>
+          <div class="region-stat">MENA: 53% banked adults — global lowest. Highest unbanked concentration. SE Asia: Super-apps (Grab, Gojek) bundling payments. Gulf states piloting CBDCs. 15.12% CAGR to 2031.</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+            <span class="tag tag-coral">Lowest Inclusion</span><span class="tag tag-amber">Super-app</span><span class="tag tag-gold">CBDC Pioneer</span>
+          </div>
+          <div class="region-share">15<span>% CAGR MEA to 2031</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- SLIDE 04 — SYSTEM PROFILES             -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="slide" id="s04">
+    <div class="slide-header">
+      <div>
+        <div class="eyebrow">03 — Systems Compared</div>
+        <div class="display" style="font-size:32px">Payment Rail Profiles</div>
+      </div>
+      <div class="tag tag-amber">Infrastructure · Scale · Model</div>
+    </div>
+    <div class="slide-body" style="padding-top:16px">
+      <table class="sys-table">
+        <thead>
+          <tr>
+            <th style="width:16%">System</th>
+            <th style="width:10%">Type</th>
+            <th style="width:12%">Volume / Users</th>
+            <th style="width:12%">Txn Value</th>
+            <th style="width:10%">Settlement</th>
+            <th style="width:11%">Online/Offline</th>
+            <th style="width:12%">Cost to User</th>
+            <th style="width:17%">Inclusion Model</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="sys-name">UPI</span><span class="sys-region">India</span></td>
+            <td><span class="tag tag-teal">Gov. Open Rail</span></td>
+            <td>172B txns/yr<br><span style="font-size:10px;color:var(--muted)">500M+ users</span></td>
+            <td>$2.7T (2024)</td>
+            <td><span style="color:var(--teal)">Instant</span></td>
+            <td>Both</td>
+            <td><span style="color:var(--teal)">Free</span></td>
+            <td>Jan Dhan linkage; rural QR; merchant MDR = 0</td>
+          </tr>
+          <tr>
+            <td><span class="sys-name">PIX</span><span class="sys-region">Brazil</span></td>
+            <td><span class="tag tag-teal">Gov. Open Rail</span></td>
+            <td>252M txns/day<br><span style="font-size:10px;color:var(--muted)">140M+ users</span></td>
+            <td>~$2T+ (2024)</td>
+            <td><span style="color:var(--teal)">Instant</span></td>
+            <td>Both</td>
+            <td><span style="color:var(--teal)">Free P2P</span></td>
+            <td>Mandated by BACEN; banked/unbanked access</td>
+          </tr>
+          <tr>
+            <td><span class="sys-name">M-Pesa</span><span class="sys-region">Africa</span></td>
+            <td><span class="tag tag-amber">Telco Wallet</span></td>
+            <td>28.33B txns<br><span style="font-size:10px;color:var(--muted)">57M+ users</span></td>
+            <td>$310B (FY2024)</td>
+            <td><span style="color:var(--gold)">Near-instant</span></td>
+            <td>Both (USSD)</td>
+            <td>Low fee</td>
+            <td>Feature-phone first; no bank required; agent network</td>
+          </tr>
+          <tr>
+            <td><span class="sys-name">Alipay</span><span class="sys-region">China</span></td>
+            <td><span class="tag tag-gold">Super-app</span></td>
+            <td>120M txns/day<br><span style="font-size:10px;color:var(--muted)">1.4B MAU</span></td>
+            <td>$20.1T (2025)</td>
+            <td><span style="color:var(--teal)">Instant</span></td>
+            <td>Both (QR)</td>
+            <td>Free P2P</td>
+            <td>Closed ecosystem; credit scoring for unbanked</td>
+          </tr>
+          <tr>
+            <td><span class="sys-name">WeChat Pay</span><span class="sys-region">China</span></td>
+            <td><span class="tag tag-gold">Super-app</span></td>
+            <td>1B+ txns/day<br><span style="font-size:10px;color:var(--muted)">935M users</span></td>
+            <td>Part of $80T</td>
+            <td><span style="color:var(--teal)">Instant</span></td>
+            <td>Both (QR)</td>
+            <td>Free P2P</td>
+            <td>Social-embedded; ecosystem lock-in</td>
+          </tr>
+          <tr>
+            <td><span class="sys-name">Visa / MC</span><span class="sys-region">Global</span></td>
+            <td><span class="tag tag-coral">Priv. Network</span></td>
+            <td>260B txns/yr<br><span style="font-size:10px;color:var(--muted)">4B+ cards</span></td>
+            <td>>$15T processed</td>
+            <td>T+1 / T+2</td>
+            <td>Both</td>
+            <td>1–3% MDR</td>
+            <td>Requires bank account; excludes bottom 1.3B</td>
+          </tr>
+          <tr>
+            <td><span class="sys-name">SEPA / Wero</span><span class="sys-region">Europe</span></td>
+            <td><span class="tag tag-teal">Regulatory</span></td>
+            <td>~30B by 2028<br><span style="font-size:10px;color:var(--muted)">SEPA zone 36 countries</span></td>
+            <td>>$20T area</td>
+            <td><span style="color:var(--gold)">10s–instant</span></td>
+            <td>Online-primary</td>
+            <td>Low / Bank fee</td>
+            <td>EU sovereignty play; Wero: P2P retail alternative</td>
+          </tr>
+          <tr>
+            <td><span class="sys-name">SWIFT</span><span class="sys-region">Global</span></td>
+            <td><span class="tag tag-coral">Legacy Interbank</span></td>
+            <td>50M+ msgs/day<br><span style="font-size:10px;color:var(--muted)">11,000+ institutions</span></td>
+            <td>$150T+/yr</td>
+            <td>1–5 days</td>
+            <td>Online (B2B)</td>
+            <td>High ($20–50+)</td>
+            <td>Institutional only; excludes individuals entirely</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- SLIDE 05 — FINANCIAL INCLUSION         -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="slide" id="s05">
+    <div class="slide-header">
+      <div>
+        <div class="eyebrow">04 — Who Is Left Out</div>
+        <div class="display" style="font-size:32px">Financial Inclusion Atlas</div>
+      </div>
+      <div class="tag tag-coral">1.3 Billion Unbanked · 2025</div>
+    </div>
+    <div class="slide-body" style="padding-top:18px">
+      <div class="inclusion-layout">
+        <div>
+          <div class="eyebrow" style="margin-bottom:16px">Account Ownership by Region (% adults, 2024)</div>
+          <div class="bubble-map">
+            <!-- Bubble = region, size = approx account ownership -->
+            <div class="bubble" style="width:130px;height:130px;background:radial-gradient(circle at 35% 35%,#42c3b0,#2a9d8f)">
+              <div class="b-pct" style="font-size:28px">83%</div>
+              <div class="b-label" style="font-size:9px;padding:0 8px">East Asia<br>Pacific</div>
+            </div>
+            <div class="bubble" style="width:116px;height:116px;background:radial-gradient(circle at 35% 35%,#f4a261,#e76f51)">
+              <div class="b-pct" style="font-size:24px">79%</div>
+              <div class="b-label" style="font-size:9px">Global Avg</div>
+            </div>
+            <div class="bubble" style="width:122px;height:122px;background:radial-gradient(circle at 35% 35%,#0077b6,#48cae4)">
+              <div class="b-pct" style="font-size:24px">78%</div>
+              <div class="b-label" style="font-size:9px">Europe<br>C. Asia</div>
+            </div>
+            <div class="bubble" style="width:110px;height:110px;background:radial-gradient(circle at 35% 35%,#6a4c93,#9d4edd)">
+              <div class="b-pct" style="font-size:22px">70%</div>
+              <div class="b-label" style="font-size:9px">Latin<br>America</div>
+            </div>
+            <div class="bubble" style="width:100px;height:100px;background:radial-gradient(circle at 35% 35%,#588157,#a3b18a)">
+              <div class="b-pct" style="font-size:20px">58%</div>
+              <div class="b-label" style="font-size:9px">Sub-Saharan<br>Africa</div>
+            </div>
+            <div class="bubble" style="width:88px;height:88px;background:radial-gradient(circle at 35% 35%,#e63946,#ff8fa3)">
+              <div class="b-pct" style="font-size:18px">53%</div>
+              <div class="b-label" style="font-size:9px">MENA</div>
+            </div>
+          </div>
+          <div style="margin-top:20px;background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:16px">
+            <div class="eyebrow" style="margin-bottom:10px">Gender Gap in Account Ownership (2024)</div>
+            <div class="flow-item">
+              <div class="flow-label">MENA</div>
+              <div class="flow-bar" style="background:var(--coral);width:40%"></div>
+              <div class="flow-val" style="color:var(--coral)">−18pp</div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-label">Sub-Saharan</div>
+              <div class="flow-bar" style="background:var(--amber);width:30%"></div>
+              <div class="flow-val" style="color:var(--amber)">−12pp</div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-label">South Asia</div>
+              <div class="flow-bar" style="background:var(--gold);width:20%"></div>
+              <div class="flow-val" style="color:var(--gold)">−8pp</div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-label">OECD</div>
+              <div class="flow-bar" style="background:var(--teal);width:4%"></div>
+              <div class="flow-val" style="color:var(--teal)">−1pp</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="inclusion-right">
+          <div class="inc-stat" style="border-left:3px solid var(--coral)">
+            <div class="inc-num">820M</div>
+            <h4>Unbanked in APAC</h4>
+            <p>Largest raw unbanked population due to rural Asia — despite China and India's digital leaps, rural peripheries remain excluded.</p>
+          </div>
+          <div class="inc-stat" style="border-left:3px solid var(--teal)">
+            <div class="inc-num" style="color:var(--teal)">40%</div>
+            <h4>Africa: Mobile Money Leader</h4>
+            <p>Sub-Saharan Africa holds the world's highest mobile money penetration (40% of adults), bypassing traditional banking entirely. M-Pesa's agent network reaches where banks never went.</p>
+          </div>
+          <div class="inc-stat" style="border-left:3px solid var(--gold)">
+            <div class="inc-num" style="color:var(--gold-light)">62%</div>
+            <h4>Digital Payment Use in LMICs</h4>
+            <p>Up from 34% in 2014 — the fastest financial shift in recorded history, driven by mobile infrastructure rather than bank branches.</p>
+          </div>
+          <div class="inc-stat">
+            <h4>Why People Remain Excluded</h4>
+            <p style="margin-bottom:6px">Top reported barriers (Findex 2025):</p>
+            <div style="display:flex;flex-wrap:wrap;gap:5px">
+              <span class="tag tag-coral">No money for fees</span>
+              <span class="tag tag-amber">No documentation</span>
+              <span class="tag tag-gold">No nearby institution</span>
+              <span class="tag tag-teal">Distrust of banks</span>
+              <span class="tag tag-coral">Family member has one</span>
+              <span class="tag tag-amber">Religious concerns</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- SLIDE 06 — LOCAL vs GLOBAL             -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="slide" id="s06">
+    <div class="slide-header">
+      <div>
+        <div class="eyebrow">05 — The Sovereignty Battle</div>
+        <div class="display" style="font-size:32px">Local Rails vs. Global Networks</div>
+      </div>
+      <div class="tag tag-gold">Power · Scale · Control</div>
+    </div>
+    <div class="slide-body" style="padding-top:20px">
+      <div class="versus-layout">
+        <div class="versus-col">
+          <div class="vs-title">🏛 Local / National Rails</div>
+
+          <div class="case-study">
+            <div class="cs-tag">UPI India — The Model</div>
+            <p>Public infrastructure, zero-fee, 172B txns/yr. India now processes MORE transactions than Visa. No private intermediary captures the spread. Financed by government; operates at national sovereignty.</p>
+          </div>
+          <div class="case-study">
+            <div class="cs-tag">PIX Brazil — The Velocity</div>
+            <p>252M txns in a single day. Central bank mandate. Kills domestic card interchange. Mercado Pago and banks compete ON the rail, not instead of it.</p>
+          </div>
+          <div class="case-study" style="background:rgba(231,111,81,0.06);border-color:rgba(231,111,81,0.2)">
+            <div class="cs-tag" style="color:var(--coral)">Wero Europe — The Resistance</div>
+            <p>15 European banks building a Visa/MC alternative for domestic P2P. Sovereign motivation: stop USD 35B/yr in interchange flowing to US networks.</p>
+          </div>
+
+          <div class="vs-item vs-pro"><h5>Advantages</h5><p>No rent extraction · Local data sovereignty · Designed for local inclusion · Government accountability · No foreign exchange dependency</p></div>
+          <div class="vs-item vs-con"><h5>Weaknesses</h5><p>Cross-border blind spot · Interoperability gap · Requires regulatory will · Slower to internationalize</p></div>
+        </div>
+
+        <div class="versus-divider"></div>
+
+        <div class="versus-col">
+          <div class="vs-title">🌐 Global Private Networks</div>
+
+          <div class="case-study" style="background:rgba(0,119,182,0.08);border-color:rgba(0,119,182,0.2)">
+            <div class="cs-tag" style="color:#48cae4">Visa / Mastercard — The Infrastructure</div>
+            <p>$35.9B revenue (Visa 2024). Greatest weakness of all national systems: cross-border. Precisely where Visa &amp; MC are growing fastest. SMEs selling internationally cannot bypass them.</p>
+          </div>
+          <div class="case-study" style="background:rgba(201,146,42,0.06);border-color:rgba(201,146,42,0.2)">
+            <div class="cs-tag">SWIFT — The Legacy</div>
+            <p>$150T+ interbank messaging/yr. 1–5 day settlement. RippleNet now settles 93% of transfers in under 10 seconds. ISO 20022 upgrade ongoing. Still the only true global correspondent backbone.</p>
+          </div>
+          <div class="case-study" style="background:rgba(42,157,143,0.06);border-color:rgba(42,157,143,0.2)">
+            <div class="cs-tag" style="color:var(--teal)">Wise / Payoneer — The Disruptors</div>
+            <p>Fintechs cut cross-border fees by 85%, charging under 1% vs traditional banks' 3–7%. $80B annual volume (Payoneer). Challenge: still dependent on card networks for last-mile.</p>
+          </div>
+
+          <div class="vs-item vs-pro"><h5>Advantages</h5><p>Universal cross-border reach · Established trust · FX conversion embedded · Fraud infrastructure · Works everywhere tourists go</p></div>
+          <div class="vs-item vs-con"><h5>Weaknesses</h5><p>Fee extraction from Global South · Data held offshore · Excludes 1.3B unbanked · Currency hegemony risk · Merchant MDR burdens SMEs</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- SLIDE 07 — TECHNICAL BACKBONE          -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="slide" id="s07">
+    <div class="slide-header">
+      <div>
+        <div class="eyebrow">06 — Under the Hood</div>
+        <div class="display" style="font-size:32px">Technical Backbone Taxonomy</div>
+      </div>
+      <div class="tag tag-teal">Architecture · Settlement · Protocol</div>
+    </div>
+    <div class="slide-body" style="padding-top:18px">
+      <div class="tech-grid">
+        <div class="tech-card">
+          <div class="tech-icon">🏦</div>
+          <div class="tech-title">Correspondent Banking</div>
+          <div class="tech-subtitle">Legacy · Batch · Slow</div>
+          <div class="tech-meta">
+            <span class="tag tag-coral">T+1 to T+5</span>
+            <span class="tag tag-amber">High Cost</span>
+          </div>
+          <div class="tech-desc">SWIFT messaging between 11,000+ institutions. Settlement in nostro/vostro accounts. Still backbone of wholesale cross-border. ISO 20022 migration underway.</div>
+          <div class="tech-examples">→ SWIFT, ACH, BACS, CHAPS</div>
+        </div>
+
+        <div class="tech-card">
+          <div class="tech-icon">⚡</div>
+          <div class="tech-title">Real-Time Payment Rails</div>
+          <div class="tech-subtitle">Gov. Mandated · Instant · Open</div>
+          <div class="tech-meta">
+            <span class="tag tag-teal">Instant (&lt;10s)</span>
+            <span class="tag tag-teal">Low / Free</span>
+          </div>
+          <div class="tech-desc">Central bank operated. Direct debit/credit. Interoperable across all banks. High volume, low value. Designed for consumer financial inclusion and merchant adoption.</div>
+          <div class="tech-examples">→ UPI, PIX, FPS (UK), SEPA Instant, NPP (AU)</div>
+        </div>
+
+        <div class="tech-card">
+          <div class="tech-icon">📱</div>
+          <div class="tech-title">Mobile Money (Telco)</div>
+          <div class="tech-subtitle">Agent Network · USSD · Feature Phone</div>
+          <div class="tech-meta">
+            <span class="tag tag-teal">Near-Instant</span>
+            <span class="tag tag-amber">Low-Cost</span>
+          </div>
+          <div class="tech-desc">No bank required. Works on feature phones via SMS/USSD. Cash-in/cash-out via local agents. Revolutionary for unbanked. Operates parallel to banking system.</div>
+          <div class="tech-examples">→ M-Pesa, MTN MoMo, Orange Money, bKash</div>
+        </div>
+
+        <div class="tech-card">
+          <div class="tech-icon">🔗</div>
+          <div class="tech-title">Card Networks</div>
+          <div class="tech-subtitle">Interchange · 4-Party · Global</div>
+          <div class="tech-meta">
+            <span class="tag tag-gold">T+1 settle</span>
+            <span class="tag tag-coral">1–3% MDR</span>
+          </div>
+          <div class="tech-desc">Issuing bank ↔ Card network ↔ Acquirer ↔ Merchant. EMV chip/NFC. Tokenization. PCI-DSS compliance. Global reach but fee extraction model excludes merchant margins in Global South.</div>
+          <div class="tech-examples">→ Visa, Mastercard, UnionPay, RuPay, Amex</div>
+        </div>
+
+        <div class="tech-card">
+          <div class="tech-icon">🧬</div>
+          <div class="tech-title">Super-App Ecosystems</div>
+          <div class="tech-subtitle">Closed Loop · Data-Rich · Scale</div>
+          <div class="tech-meta">
+            <span class="tag tag-gold">Instant</span>
+            <span class="tag tag-amber">Ecosystem Lock</span>
+          </div>
+          <div class="tech-desc">Payment embedded in social/commerce OS. QR code at POS. Credit scoring from behavioral data. No card needed. Massive financial inclusion in China — model being exported via Belt &amp; Road.</div>
+          <div class="tech-examples">→ Alipay, WeChat Pay, Grab, Paytm, Gojek</div>
+        </div>
+
+        <div class="tech-card">
+          <div class="tech-icon">🪙</div>
+          <div class="tech-title">CBDC &amp; Stablecoins</div>
+          <div class="tech-subtitle">Emerging · Regulatory · Programmable</div>
+          <div class="tech-meta">
+            <span class="tag tag-teal">Pilot Stage</span>
+            <span class="tag tag-amber">High Potential</span>
+          </div>
+          <div class="tech-desc">Central bank digital currencies: China e-CNY (active), mBridge (cross-border multi-CBDC). CBDCs could cut remittance costs 50–60%. Stablecoins: $16B crypto payments in 2024 → $38B by 2030.</div>
+          <div class="tech-examples">→ e-CNY, JAM-DEX, mBridge, USDC, RippleNet</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- SLIDE 08 — MEASUREMENT FRAMEWORK       -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="slide" id="s08">
+    <div class="slide-header">
+      <div>
+        <div class="eyebrow">07 — Evaluating Impact</div>
+        <div class="display" style="font-size:32px">15 Criteria to Measure Payment Systems</div>
+      </div>
+      <div class="tag tag-amber">Financial · Economic · Societal</div>
+    </div>
+    <div class="slide-body" style="padding-top:20px">
+      <div class="measure-layout">
+        <div class="measure-col financial">
+          <h3>💰 Financial Impact</h3>
+
+          <div class="measure-item">
+            <div class="measure-num">F1</div>
+            <div class="measure-text">
+              <h5>Transaction Volume &amp; Value</h5>
+              <p>Count (txns/year) + value ($). The raw throughput metric. UPI vs Visa: who processes more tells us about democratization of access.</p>
+            </div>
+          </div>
+          <div class="measure-item">
+            <div class="measure-num">F2</div>
+            <div class="measure-text">
+              <h5>Cost per Transaction (User + Merchant)</h5>
+              <p>All-in cost: MDR, FX spread, fixed fees. Free-to-user rails (UPI, PIX) vs 2.9% card networks fundamentally reshape who can afford to sell.</p>
+            </div>
+          </div>
+          <div class="measure-item">
+            <div class="measure-num">F3</div>
+            <div class="measure-text">
+              <h5>Rent Extraction Ratio</h5>
+              <p>% of each transaction captured by intermediaries (banks, networks, fintechs) vs value retained by sender/receiver. Key for equity analysis.</p>
+            </div>
+          </div>
+          <div class="measure-item">
+            <div class="measure-num">F4</div>
+            <div class="measure-text">
+              <h5>Market Penetration &amp; Adoption Velocity</h5>
+              <p>% of addressable population using the system + growth rate. Brazil PIX: 78% YoY growth. The speed of democratization matters.</p>
+            </div>
+          </div>
+          <div class="measure-item">
+            <div class="measure-num">F5</div>
+            <div class="measure-text">
+              <h5>Settlement Finality Speed</h5>
+              <p>Seconds (instant rails) vs days (SWIFT). Cash-flow impact on SMEs is existential — a 48h settlement float kills small merchants.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="measure-col economic">
+          <h3>📈 Economic Impact</h3>
+
+          <div class="measure-item">
+            <div class="measure-num">E1</div>
+            <div class="measure-text">
+              <h5>Financial Inclusion Index</h5>
+              <p>% of adults with an account, credit access, savings product, insurance. World Bank Findex methodology. Disaggregated by gender, rural/urban, income quintile.</p>
+            </div>
+          </div>
+          <div class="measure-item">
+            <div class="measure-num">E2</div>
+            <div class="measure-text">
+              <h5>Money Velocity &amp; GDP Multiplier</h5>
+              <p>How many times does money circulate before leaving the system? Faster settlement = higher velocity = more economic activity per unit of currency.</p>
+            </div>
+          </div>
+          <div class="measure-item">
+            <div class="measure-num">E3</div>
+            <div class="measure-text">
+              <h5>Remittance Efficiency Score</h5>
+              <p>Cost + speed + corridor coverage. UN SDG target: &lt;3% for $200 transfer. Current avg: 4.26%. Africa intraregional: up to 30%. Lives depend on this.</p>
+            </div>
+          </div>
+          <div class="measure-item">
+            <div class="measure-num">E4</div>
+            <div class="measure-text">
+              <h5>SME Digital Access Rate</h5>
+              <p>% of small businesses able to accept digital payments without prohibitive cost. Zero-MDR mandates (India) vs 2.9% (US cards) create fundamentally different SME landscapes.</p>
+            </div>
+          </div>
+          <div class="measure-item">
+            <div class="measure-num">E5</div>
+            <div class="measure-text">
+              <h5>Correspondent Banking Coverage</h5>
+              <p>% of country-to-country corridors with active banking relationships. Withdrawal of correspondent banking from "high-risk" jurisdictions is a form of economic exclusion.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="measure-col societal">
+          <h3>🌍 Societal Impact</h3>
+
+          <div class="measure-item">
+            <div class="measure-num">S1</div>
+            <div class="measure-text">
+              <h5>Gender Equity Gap</h5>
+              <p>Account ownership, transaction frequency, credit access — all disaggregated by gender. MENA: 18pp gap. Women's financial inclusion is the single strongest predictor of household poverty exit.</p>
+            </div>
+          </div>
+          <div class="measure-item">
+            <div class="measure-num">S2</div>
+            <div class="measure-text">
+              <h5>Rural–Urban Divide</h5>
+              <p>Effective payment access beyond nominal account ownership. 89% of adults have mobile phones — yet mobile money penetration lags. Infrastructure ≠ inclusion.</p>
+            </div>
+          </div>
+          <div class="measure-item">
+            <div class="measure-num">S3</div>
+            <div class="measure-text">
+              <h5>Payment Sovereignty Index</h5>
+              <p>% of domestic transactions settled on domestic rails vs foreign-owned networks. High foreign dependency = economic exposure + data risk + policy leakage.</p>
+            </div>
+          </div>
+          <div class="measure-item">
+            <div class="measure-num">S4</div>
+            <div class="measure-text">
+              <h5>Crisis Resilience</h5>
+              <p>Does the system function during power outages, internet disruption, FX crises? M-Pesa's USSD model works without smartphones. A resilience floor matters for disaster-prone regions.</p>
+            </div>
+          </div>
+          <div class="measure-item">
+            <div class="measure-num">S5</div>
+            <div class="measure-text">
+              <h5>Carbon Footprint per Transaction</h5>
+              <p>Energy cost of settlement layer. Cash: logistics, minting, printing. Blockchain (PoW): energy-intensive. Instant payment rails: negligible per-transaction. An emerging ESG metric.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- SLIDE 09 — CULTURAL EQUITY             -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="slide" id="s09">
+    <div class="slide-header">
+      <div>
+        <div class="eyebrow">08 — Money Is Not Neutral</div>
+        <div class="display" style="font-size:32px">Cultural Equity &amp; the Politics of Payment</div>
+      </div>
+      <div class="tag tag-coral">Power · Language · Trust</div>
+    </div>
+    <div class="slide-body" style="padding-top:18px">
+      <div class="equity-layout">
+        <div class="equity-left">
+          <div class="equity-quote">
+            "Every payment system embeds a theory of who matters. The question is never just 'does it work?' — but for whom, at what cost, and who controls the rails."
+            <cite>Synthesis — Financial Inclusion Discourse</cite>
+          </div>
+
+          <div class="equity-card">
+            <h4>🌐 The Dollar's Gravity Well</h4>
+            <p>~88% of FX transactions involve USD. Cross-border payments for the Global South are priced in, settled through, and monitored by USD-denominated systems. A Kenyan SME paying a Chinese supplier via SWIFT pays multiple FX spreads, US correspondent bank fees, and OFAC compliance costs — even in a transaction that has nothing to do with the United States.</p>
+          </div>
+
+          <div class="equity-card">
+            <h4>📜 Document-First Exclusion</h4>
+            <p>Traditional banking requires national ID, proof of address, tax number, credit history. 1B+ adults globally lack formal ID documents. Women in South Asia and MENA are disproportionately excluded. Mobile money (M-Pesa, bKash) broke this barrier with SIM-card-only onboarding — the most radical financial inclusion innovation of the century.</p>
+          </div>
+
+          <div class="equity-card">
+            <h4>🏪 Informal Economy Blindness</h4>
+            <p>60% of world's workers operate in informal economies that are invisible to formal payment infrastructure. Yet agricultural commodity payments, daily wage labor, street markets — these are where most Global South economic activity occurs. Digitizing these flows (India's Jan Dhan + Aadhaar + Mobile) can lift millions from invisible to counted.</p>
+          </div>
+        </div>
+
+        <div class="equity-right">
+          <div class="equity-card">
+            <h4>💸 The Remittance Tax on Diaspora</h4>
+            <p>$800B+ sent annually in remittances — often the primary income for entire communities. Yet a Nigerian worker in London sending money home pays 8–12%. A Ghanaian family loses $120 per $1,000 sent. This is a structural tax on migration and family survival — not a market inefficiency.</p>
+            <div style="margin-top:12px">
+              <div class="eyebrow" style="margin-bottom:8px">Cost to Send $200 — Key Corridors (Q1 2025)</div>
+              <table class="corridor-table">
+                <tr><td>🇺🇸→🇲🇽 US to Mexico</td><td style="color:var(--amber)">4.94%</td><td style="color:var(--muted)">$68B/yr flow</td></tr>
+                <tr><td>🇬🇧→🇳🇬 UK to Nigeria</td><td style="color:var(--coral)">~8%</td><td style="color:var(--muted)">High friction</td></tr>
+                <tr><td>🇿🇦→🇿🇼 SA to Zimbabwe</td><td style="color:var(--coral)">~14%</td><td style="color:var(--muted)">Africa-Africa worst</td></tr>
+                <tr><td>🇸🇬→🇮🇳 Singapore to India</td><td style="color:var(--teal)">~1.5%</td><td style="color:var(--muted)">UPI cross-border</td></tr>
+                <tr><td>🇩🇪→🇵🇱 Germany to Poland</td><td style="color:var(--teal)">~0.8%</td><td style="color:var(--muted)">SEPA zone</td></tr>
+              </table>
+            </div>
+          </div>
+
+          <div class="equity-card">
+            <h4>🔒 Data Sovereignty as Equity</h4>
+            <p>When a West African consumer uses a US-owned payment processor, their transaction data — and derived credit, behavioral, commercial intelligence — leaves the continent. European GDPR is a regulatory floor that the Global South largely lacks. Payment data is the new oil: who holds it determines who can price risk, extend credit, and build economic intelligence.</p>
+          </div>
+
+          <div class="equity-card">
+            <h4>🧭 The Belt-and-Road Payment Geopolitics</h4>
+            <p>China is exporting its QR-code payment model through Alipay/WeChat partnerships across Africa, Southeast Asia, and Central Asia. This creates dependency on Chinese rails as an alternative to US dollar networks — shifting, not dissolving, the sovereignty problem. True financial equity requires neutral, locally-governed open rails: the UPI/PIX model.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- SLIDE 10 — SYNTHESIS                   -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="slide" id="s10">
+    <div style="padding: 56px 64px 0; border-bottom: 1px solid var(--border); padding-bottom: 20px; display:flex; justify-content:space-between; align-items:flex-end;">
+      <div>
+        <div class="eyebrow">09 — Synthesis</div>
+        <div class="display" style="font-size:32px">The Thesis</div>
+      </div>
+      <div class="tag tag-gold">Implications for Practice</div>
+    </div>
+    <div style="padding: 32px 64px; flex:1; overflow:auto;">
+      <div class="synthesis-inner">
+        <div class="thesis">
+          The global payment landscape is not converging —<br>
+          it is <em>deliberately fracturing</em> into sovereign blocs,<br>
+          each embedding a theory of who <em>deserves</em> economic citizenship.
+        </div>
+
+        <div class="implications">
+          <div class="impl-card">
+            <div class="impl-icon">⚖️</div>
+            <h5>For Financial Inclusion</h5>
+            <p>Open rails (UPI, PIX) prove inclusion does not require charity — it requires political will. Free-to-user infrastructure is the only model that reaches the bottom billion without predatory fee extraction.</p>
+          </div>
+          <div class="impl-card">
+            <div class="impl-icon">🌏</div>
+            <h5>For Local vs. Global</h5>
+            <p>Local rails win domestically; global networks win cross-border. The future is interoperability between them — not replacement. G20 cross-border payment targets are the critical policy frontier.</p>
+          </div>
+          <div class="impl-card">
+            <div class="impl-icon">⚡</div>
+            <h5>For Economic Efficiency</h5>
+            <p>Instant settlement is not a luxury — it is GDP. A $200 remittance delayed 3 days at 8% cost is $16 lost from a family that cannot afford it. Every basis point of friction is a development tax.</p>
+          </div>
+          <div class="impl-card">
+            <div class="impl-icon">🌺</div>
+            <h5>For Cultural Equity</h5>
+            <p>Payment sovereignty = economic sovereignty. The corridor that matters most is not US→EU. It is Sub-Saharan Africa-to-Africa — the world's most expensive, most underprovided, most urgently needed.</p>
+          </div>
+        </div>
+
+        <div class="source-line">
+          Sources: World Bank Global Findex 2025 · Worldpay Global Payments Report 2025 · Mordor Intelligence 2026 · PCMI 2026 · GR4VY 2026 · Business of Apps 2026 ·
+          Coinlaw / Asialink 2026 · IMF Cross-Border Payments TA 2023 · BIS CBDC Papers 2024 · Planergy Global Trends 2025 · FinDev Gateway 2025
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════ -->
+  <!-- SLIDE 11 — SDG × REGION HEATMAP        -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="slide" id="s11">
+    <div class="slide-header">
+      <div>
+        <div class="eyebrow">10 — Systemic Mirror</div>
+        <div class="display" style="font-size:30px">Payments Mapped onto the UN–World Bank Development Taxonomy</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <span class="tag tag-teal">SDGs 2030</span>
+        <span class="tag tag-gold">WB Findex · HCI · B-READY</span>
+      </div>
+    </div>
+    <div class="slide-body" style="padding-top:14px;display:flex;flex-direction:column;gap:14px">
+
+      <!-- ── LEGEND ── -->
+      <div style="display:flex;align-items:center;gap:20px;font-family:'Fira Code',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase">
+        <span style="color:var(--muted)">Payment contribution to SDG target:</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:2px;background:#1a4a2e;display:inline-block;border:1px solid #2a9d8f"></span> Strong</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:2px;background:#1e3a1a;display:inline-block;border:1px solid #5a8a3a"></span> Good</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:2px;background:#2a2410;display:inline-block;border:1px solid #c9922a"></span> Mixed</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:2px;background:#2a1810;display:inline-block;border:1px solid #e07040"></span> Lagging</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:2px;background:#2a1010;display:inline-block;border:1px solid #c0394a"></span> Critical</span>
+        <span style="margin-left:8px;color:rgba(244,237,224,0.3)">|</span>
+        <span style="color:rgba(244,237,224,0.4)">Cells show: payment system contribution + key data point</span>
+      </div>
+
+      <!-- ══ HEATMAP TABLE ══ -->
+      <div style="flex:1;overflow:auto">
+        <table id="heatmap" style="width:100%;border-collapse:separate;border-spacing:3px 3px;table-layout:fixed">
+          <colgroup>
+            <col style="width:18%">
+            <col style="width:13.67%">
+            <col style="width:13.67%">
+            <col style="width:13.67%">
+            <col style="width:13.67%">
+            <col style="width:13.67%">
+            <col style="width:13.67%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="font-family:'Fira Code',monospace;font-size:9px;color:var(--gold);letter-spacing:0.12em;text-transform:uppercase;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)">SDG Target → Region</th>
+              <th class="rh rh-china">🇨🇳 China / EAP</th>
+              <th class="rh rh-india">🇮🇳 India / S.Asia</th>
+              <th class="rh rh-africa">🌍 Sub-Saharan Africa</th>
+              <th class="rh rh-latam">🌎 Latin America</th>
+              <th class="rh rh-mena">🌐 MENA / SE Asia</th>
+              <th class="rh rh-west">🇪🇺🇺🇸 N.America / Europe</th>
+            </tr>
+          </thead>
+          <tbody id="hm-body">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ══ WB INDEX BARS ══ -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+
+        <!-- Findex -->
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+            <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--teal);letter-spacing:0.12em;text-transform:uppercase">WB Findex 2025 — Account Ownership %</div>
+            <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--muted)">SDG 8.10.2 primary indicator</div>
+          </div>
+          <div id="findex-bars"></div>
+        </div>
+
+        <!-- HCI -->
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+            <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--amber);letter-spacing:0.12em;text-transform:uppercase">WB Human Capital Index (HCI) 0–1</div>
+            <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--muted)">Productivity of next generation</div>
+          </div>
+          <div id="hci-bars"></div>
+        </div>
+
+        <!-- B-READY -->
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+            <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--gold-light);letter-spacing:0.12em;text-transform:uppercase">WB B-READY 2025 — Financial Services Pillar (0–100)</div>
+            <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--muted)">Replaces Doing Business 2021</div>
+          </div>
+          <div id="bready-bars"></div>
+        </div>
+
+      </div>
+
+      <!-- ── footnote ── -->
+      <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--muted);letter-spacing:0.06em;border-top:1px solid var(--border);padding-top:8px">
+        SDG targets: 1.4 (financial resource access) · 5.a (women's financial equality) · 8.10 (digital payment inclusion) · 9.3 (SME finance access) · 10.c (remittance cost &lt;3%) · 16.6 (transparent institutions) · 17.3 (mobilise cross-border finance) ·
+        WB Findex 2025 · HCI via World Bank Open Data 2026 · B-READY 2025 Financial Services Pillar (101 economies interim edition) · Scores are regional aggregates; intra-regional variation is significant.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<style>
+/* ── heatmap shared ── */
+#heatmap th.rh {
+  font-family: 'Fira Code', monospace;
+  font-size: 10px;
+  color: var(--parchment);
+  letter-spacing: 0.06em;
+  padding: 8px 10px;
+  text-align: center;
+  border-radius: 4px 4px 0 0;
+  border-bottom: 1px solid var(--border);
+}
+.rh-china  { background: rgba(230,57,70,0.12);  border: 1px solid rgba(230,57,70,0.3) }
+.rh-india  { background: rgba(244,162,97,0.12); border: 1px solid rgba(244,162,97,0.3) }
+.rh-africa { background: rgba(88,129,87,0.15);  border: 1px solid rgba(88,129,87,0.4) }
+.rh-latam  { background: rgba(123,45,139,0.15); border: 1px solid rgba(123,45,139,0.35) }
+.rh-mena   { background: rgba(244,162,97,0.08); border: 1px solid rgba(244,162,97,0.2) }
+.rh-west   { background: rgba(0,119,182,0.12);  border: 1px solid rgba(0,119,182,0.3) }
+
+.hm-row-label {
+  padding: 7px 10px;
+  border-radius: 4px;
+  background: rgba(201,146,42,0.06);
+  border: 1px solid var(--border);
+}
+.hm-sdg-num {
+  font-family: 'Fira Code', monospace;
+  font-size: 10px;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  display: block;
+}
+.hm-sdg-title {
+  font-size: 10px;
+  color: var(--parchment);
+  font-weight: 500;
+  display: block;
+  margin: 2px 0 1px;
+  line-height: 1.3;
+}
+.hm-sdg-sub {
+  font-family: 'Fira Code', monospace;
+  font-size: 8px;
+  color: var(--muted);
+  display: block;
+  line-height: 1.3;
+}
+.hm-cell {
+  padding: 6px 8px;
+  border-radius: 4px;
+  text-align: center;
+  cursor: default;
+  transition: transform 0.15s;
+  vertical-align: top;
+}
+.hm-cell:hover { transform: scale(1.03); z-index:5; position:relative; }
+.hm-cell-inner { display:flex; flex-direction:column; gap:2px; align-items:center; }
+.hm-score {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+}
+.hm-label {
+  font-family: 'Fira Code', monospace;
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+.hm-detail {
+  font-size: 9px;
+  color: rgba(244,237,224,0.6);
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
+/* heat colours */
+.heat-4 { background: #0d3322; border: 1px solid #2a9d8f; color: #4ecdc0; }
+.heat-3 { background: #122a12; border: 1px solid #4a7a2a; color: #8ecf6a; }
+.heat-2 { background: #2a2208; border: 1px solid #c9922a; color: #e8b96a; }
+.heat-1 { background: #2a1808; border: 1px solid #d06530; color: #f4956a; }
+.heat-0 { background: #280d0d; border: 1px solid #b0283a; color: #e05060; }
+
+/* wb index bars */
+.wb-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+.wb-bar-label { font-family:'Fira Code',monospace; font-size:9px; color:var(--parchment); width:110px; flex-shrink:0; }
+.wb-bar-track { flex:1; height:7px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden; }
+.wb-bar-fill { height:100%; border-radius:4px; }
+.wb-bar-val { font-family:'Fira Code',monospace; font-size:9px; color:var(--gold-light); width:36px; text-align:right; }
+</style>
+
+<!-- NAV -->
+<div id="nav">
+  <button id="btn-prev">← prev</button>
+  <div class="dots" id="dots"></div>
+  <span id="slide-counter">1 / 10</span>
+  <button id="btn-next">next →</button>
+</div>
+
+<script>
+  // ── HEATMAP DATA ──────────────────────────────────────────────────
+  // Rows = SDG targets; Cols = regions (China/EAP, India, Africa, LatAm, MENA/SEA, West)
+  // score: 0=Critical 1=Lagging 2=Mixed 3=Good 4=Strong
+  const REGIONS = ['China / EAP','India / S.Asia','Sub-Saharan Africa','Latin America','MENA / SE Asia','N.Am + Europe'];
+  const SDG_ROWS = [
+    {
+      num:'SDG 1.4', title:'No Poverty — Financial Resource Access',
+      sub:'Equal rights to economic resources & basic services',
+      scores:[3,3,1,2,1,4],
+      labels:['89% banked','89% banked','58% banked','70% banked','53% banked','95%+ banked'],
+      details:['Super-app credit scores open credit to low-income','Jan Dhan: 500M+ zero-balance accounts opened','40% still unbanked; cash is poverty trap','60% cash dependency; informal economy dominance','MENA: highest exclusion concentration globally','Universal access but not universal affordability']
+    },
+    {
+      num:'SDG 5.a', title:'Gender Equality — Women\'s Financial Rights',
+      sub:'Equal access to financial services & property',
+      scores:[3,2,1,2,0,4],
+      labels:['~3pp gap','~7pp gap','−12pp gap','~5pp gap','−18pp gap','~1pp gap'],
+      details:['Digital IDs reduced gender gap significantly','Rural women still 15pp below men','Togo +25pp gap; Nigeria +22pp; widening','Mobile money closing gap in Brazil','Worst gender gap globally; cultural barriers','Legal parity; wage gap reflected in savings']
+    },
+    {
+      num:'SDG 8.10', title:'Decent Work — Digital Payment Inclusion',
+      sub:'Access to banking, insurance & financial services for all',
+      scores:[4,4,2,3,1,4],
+      labels:['$80T / yr','172B txns/yr','Mobile money','PIX: 252M/day','GCash/Grab rise','Card-dominant'],
+      details:['96% mobile pay adoption; world\'s largest ecosystem','UPI: 49% of all global real-time payments volume','M-Pesa $310B; but 90% Africa txns still cash','PIX 78% YoY; Mercado Pago 50M+ users','Super-apps growing but 47% unbanked in MENA','SEPA Instant: 3B → 30B txns by 2028']
+    },
+    {
+      num:'SDG 9.3', title:'Industry & Innovation — SME Finance Access',
+      sub:'Small enterprises integrated into value chains & markets',
+      scores:[3,3,1,2,1,4],
+      labels:['Ant MSME credit','Zero MDR mandate','Agent banking','Mercado Crédito','Fragmented','Open Banking'],
+      details:['Alipay credit scoring for 40M+ micro-businesses','UPI zero MDR: levels playing field for street vendors','Most SSA SMEs remain cash-only; no digital footprint','BNPL & Mercado Pago credit for informal sector','B-READY: Financial Services pillar weakest in MENA','PSD2 opens banking data for SME lending']
+    },
+    {
+      num:'SDG 10.c', title:'Reduced Inequalities — Remittance Cost <3%',
+      sub:'Reduce transaction costs of migrant remittances to <3%',
+      scores:[2,3,0,1,0,3],
+      labels:['~2–3%','~1.5% SG→IN','8–30%','~5%','~8–12%','~1–2% SEPA'],
+      details:['China outbound low; inbound from Africa corridors high','UPI cross-border enabling new low-cost corridors','Africa-Africa: world\'s most expensive; some at 30%','US→Mexico: $68B flow at 4.94%; still above SDG target','UK→Nigeria ~8%; remittance = lifeline tax on diaspora','Intra-EU near-free; non-EU corridors still costly']
+    },
+    {
+      num:'SDG 16.6', title:'Strong Institutions — Transparent Digital Governance',
+      sub:'Accountable & transparent public institutions',
+      scores:[2,3,1,2,1,4],
+      labels:['Closed ecosystem','Aadhaar stack','Fragmented','Pix by BACEN','Varying','PSD2 / Open B.'],
+      details:['State surveillance embedded; low autonomy for users','India Stack: open, interoperable, auditable public infra','Many payment regulators lack capacity or independence','Brazil: BACEN model — open, mandated, consumer-first','Gulf states piloting CBDCs but governance opaque','GDPR + PSD2: strongest consumer data rights globally']
+    },
+    {
+      num:'SDG 17.3', title:'Partnerships — Cross-Border Finance Mobilisation',
+      sub:'Mobilise resources for developing countries; interoperability',
+      scores:[3,3,1,2,2,4],
+      labels:['Belt & Road pay','UPI ASEAN links','Isolated corridors','Regional gaps','mBridge pilot','G20 framework'],
+      details:['China exporting payment rails to 50+ BRI countries','UPI linking to Singapore, UAE, France, Mauritius','Africa-Africa rails least developed globally','Mercosur + LATAM instant pay interop nascent','mBridge multi-CBDC pilot: China, UAE, HK, Thailand','G20 cross-border payments roadmap; SWIFT ISO 20022']
+    }
+  ];
+
+  // heat label text
+  const HEAT_TEXT = ['Critical','Lagging','Mixed','Good','Strong'];
+
+  function buildHeatmap() {
+    const tbody = document.getElementById('hm-body');
+    SDG_ROWS.forEach(row => {
+      const tr = document.createElement('tr');
+      // label cell
+      const tdLabel = document.createElement('td');
+      tdLabel.className = 'hm-row-label';
+      tdLabel.innerHTML = `<span class="hm-sdg-num">${row.num}</span><span class="hm-sdg-title">${row.title}</span><span class="hm-sdg-sub">${row.sub}</span>`;
+      tr.appendChild(tdLabel);
+      // data cells
+      row.scores.forEach((s, i) => {
+        const td = document.createElement('td');
+        td.className = `hm-cell heat-${s}`;
+        td.innerHTML = `<div class="hm-cell-inner">
+          <span class="hm-score">${['⚠','↓','~','↑','✦'][s]}</span>
+          <span class="hm-label">${HEAT_TEXT[s]}</span>
+          <span style="font-family:'Fira Code',monospace;font-size:8px;margin-top:1px">${row.labels[i]}</span>
+          <span class="hm-detail">${row.details[i]}</span>
+        </div>`;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+  }
+
+  function buildWBBars() {
+    // Findex data (account ownership %)
+    const findex = [
+      { label:'China / EAP',       val:83, color:'rgba(230,57,70,0.8)'   },
+      { label:'India / S.Asia',    val:89, color:'rgba(244,162,97,0.8)'  },
+      { label:'Sub-Saharan Africa',val:58, color:'rgba(88,129,87,0.8)'   },
+      { label:'Latin America',     val:70, color:'rgba(123,45,139,0.8)'  },
+      { label:'MENA / SE Asia',    val:53, color:'rgba(200,120,60,0.8)'  },
+      { label:'N.Am + Europe',     val:95, color:'rgba(0,150,200,0.8)'   },
+    ];
+    const hci = [
+      { label:'China / EAP',       val:0.65, color:'rgba(230,57,70,0.8)'  },
+      { label:'India / S.Asia',    val:0.49, color:'rgba(244,162,97,0.8)' },
+      { label:'Sub-Saharan Africa',val:0.40, color:'rgba(88,129,87,0.8)'  },
+      { label:'Latin America',     val:0.56, color:'rgba(123,45,139,0.8)' },
+      { label:'MENA / SE Asia',    val:0.55, color:'rgba(200,120,60,0.8)' },
+      { label:'N.Am + Europe',     val:0.80, color:'rgba(0,150,200,0.8)'  },
+    ];
+    const bready = [
+      { label:'China / EAP',       val:62, color:'rgba(230,57,70,0.8)'  },
+      { label:'India / S.Asia',    val:54, color:'rgba(244,162,97,0.8)' },
+      { label:'Sub-Saharan Africa',val:38, color:'rgba(88,129,87,0.8)'  },
+      { label:'Latin America',     val:55, color:'rgba(123,45,139,0.8)' },
+      { label:'MENA / SE Asia',    val:46, color:'rgba(200,120,60,0.8)' },
+      { label:'N.Am + Europe',     val:74, color:'rgba(0,150,200,0.8)'  },
+    ];
+
+    function renderBars(containerId, data, max) {
+      const el = document.getElementById(containerId);
+      data.forEach(d => {
+        const pct = (d.val / max * 100).toFixed(0);
+        el.innerHTML += `<div class="wb-bar-row">
+          <div class="wb-bar-label">${d.label}</div>
+          <div class="wb-bar-track"><div class="wb-bar-fill" style="width:${pct}%;background:${d.color}"></div></div>
+          <div class="wb-bar-val">${d.val}${max===1?'':max===100?'%':''}</div>
+        </div>`;
+      });
+    }
+    renderBars('findex-bars', findex, 100);
+    renderBars('hci-bars', hci, 1);
+    renderBars('bready-bars', bready, 100);
+  }
+
+  buildHeatmap();
+  buildWBBars();
+  // ── END HEATMAP ────────────────────────────────────────────────────
+
+  const slides = document.querySelectorAll('.slide');
+  const dotsEl = document.getElementById('dots');
+  const counter = document.getElementById('slide-counter');
+  let cur = 0;
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' on' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[cur].classList.remove('active');
+    document.querySelectorAll('.dot')[cur].classList.remove('on');
+    cur = (n + slides.length) % slides.length;
+    slides[cur].classList.add('active');
+    document.querySelectorAll('.dot')[cur].classList.add('on');
+    counter.textContent = `${cur + 1} / ${slides.length}`;
+  // init counter display on load
+  counter.textContent = `1 / ${slides.length}`;
+  }
+
+  document.getElementById('btn-next').onclick = () => goTo(cur + 1);
+  document.getElementById('btn-prev').onclick = () => goTo(cur - 1);
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(cur + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(cur - 1);
+  });
+
+  // Touch swipe
+  let tx = 0;
+  document.addEventListener('touchstart', e => tx = e.touches[0].clientX);
+  document.addEventListener('touchend', e => {
+    const dx = tx - e.changedTouches[0].clientX;
+    if (Math.abs(dx) > 50) dx > 0 ? goTo(cur + 1) : goTo(cur - 1);
+  });
+</script>
+</body>
+</html>
