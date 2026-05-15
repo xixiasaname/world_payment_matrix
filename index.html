@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The World Pays — Global Payment Atlas 2025</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Fira+Code:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0b1a13;
+    --parchment: #f4ede0;
+    --gold: #c9922a;
+    --gold-light: #e8b96a;
+    --teal: #2a9d8f;
+    --coral: #e76f51;
+    --amber: #f4a261;
+    --slate: #2c3e50;
+    --muted: #8c9ba5;
+    --card-bg: #112218;
+    --border: rgba(201,146,42,0.25);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--ink);
+    color: var(--parchment);
+    font-family: 'Instrument Sans', sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* ── SLIDE ENGINE ── */
+  #deck { width: 100%; height: 100%; position: relative; }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+    overflow: hidden;
+  }
+  .slide.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* ── NAV ── */
+  #nav {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    z-index: 100;
+    background: rgba(11,26,19,0.85);
+    border: 1px solid var(--border);
+    padding: 10px 20px;
+    border-radius: 100px;
+    backdrop-filter: blur(10px);
+  }
+  #nav button {
+    background: none;
+    border: none;
+    color: var(--gold-light);
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    padding: 4px 12px;
+    border-radius: 20px;
+    transition: background 0.2s;
+  }
+  #nav button:hover { background: rgba(201,146,42,0.15); }
+  #nav .dots { display: flex; gap: 6px; padding: 0 8px; }
+  #nav .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  #nav .dot.on { background: var(--gold); }
+  #slide-counter {
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    padding: 0 4px;
+  }
+
+  /* ── SHARED TYPOGRAPHY ── */
+  .eyebrow {
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .display {
+    font-family: 'Cormorant Garamond', serif;
+    line-height: 1.05;
+    font-weight: 300;
+  }
+  .mono { font-family: 'Fira Code', monospace; }
+  .tag {
+    display: inline-block;
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .tag-teal { background: rgba(42,157,143,0.2); color: var(--teal); border: 1px solid rgba(42,157,143,0.4); }
+  .tag-coral { background: rgba(231,111,81,0.15); color: var(--coral); border: 1px solid rgba(231,111,81,0.4); }
+  .tag-gold { background: rgba(201,146,42,0.15); color: var(--gold-light); border: 1px solid var(--border); }
+  .tag-amber { background: rgba(244,162,97,0.15); color: var(--amber); border: 1px solid rgba(244,162,97,0.3); }
+
+  /* ── SLIDE STRUCTURAL PATTERNS ── */
+  .slide-header {
+    padding: 40px 56px 0;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .slide-body {
+    flex: 1;
+    padding: 28px 56px;
+    overflow: auto;
+  }
+
+  /* ── GRID HELPERS ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 20px;
+    position: relative;
+  }
+  .card-accent { border-left: 3px solid var(--gold); }
+  .card-teal { border-left: 3px solid var(--teal); }
+  .card-coral { border-left: 3px solid var(--coral); }
+
+  .stat-huge {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 52px;
+    font-weight: 300;
+    color: var(--gold-light);
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+  .stat-sub {
+    font-size: 12px;
+    color: rgba(244,237,224,0.6);
+    margin-top: 4px;
+  }
+
+  /* ─────────────────────────────────────────
+     SLIDE 01 — COVER
+  ───────────────────────────────────────── */
+  #s01 {
+    background: radial-gradient(ellipse at 30% 60%, #1a3a25 0%, var(--ink) 60%);
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 80px;
+  }
+  #s01 .cover-inner { max-width: 780px; }
+  #s01 h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 90px;
+    font-weight: 300;
+    line-height: 0.95;
+    color: var(--parchment);
+    margin: 16px 0 24px;
+  }
+  #s01 h1 em {
+    font-style: italic;
+    color: var(--gold-light);
+  }
+  #s01 .sub {
+    font-size: 15px;
+    color: rgba(244,237,224,0.65);
+    line-height: 1.6;
+    max-width: 520px;
+    margin-bottom: 40px;
+  }
+  .cover-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cover-tags .tag { font-size: 10px; padding: 5px 12px; }
+
+  /* meridian line decoration */
+  #s01::before {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 42%;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 30px,
+      rgba(201,146,42,0.04) 30px,
+      rgba(201,146,42,0.04) 31px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 40px,
+      rgba(201,146,42,0.04) 40px,
+      rgba(201,146,42,0.04) 41px
+    );
+    border-left: 1px solid var(--border);
+  }
+  #s01::after {
+    content: '2 0 2 5';
+    position: absolute;
+    right: 40px; bottom: 36px;
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    opacity: 0.6;
+  }
+
+  /* ─────────────────────────────────────────
+     SLIDE 02 — BIG NUMBERS
+  ───────────────────────────────────────── */
+  #s02 { background: var(--ink); }
+  .pulse-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--teal), var(--gold), var(--coral));
+    border-radius: 2px;
+    margin-bottom: 32px;
+    animation: pulse-width 3s ease infinite;
+  }
+  @keyframes pulse-width {
+    0%,100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+  .num-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .num-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 22px 20px;
+  }
+  .num-card .big {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 44px;
+    font-weight: 300;
+    color: var(--gold-light);
+    line-height: 1;
+  }
+  .num-card .unit {
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    color: var(--muted);
+    margin-left: 2px;
+  }
+  .num-card .desc {
+    font-size: 11px;
+    color: rgba(244,237,224,0.55);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+  .num-card .delta {
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: var(--teal);
+    margin-top: 6px;
+  }
+
+  .flow-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 16px;
+  }
+  .flow-bar-wrap { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 18px 20px; }
+  .flow-item { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .flow-label { font-family: 'Fira Code', monospace; font-size: 10px; color: var(--parchment); width: 80px; flex-shrink: 0; }
+  .flow-bar { height: 8px; border-radius: 4px; flex: 1; }
+  .flow-val { font-family: 'Fira Code', monospace; font-size: 10px; color: var(--gold-light); width: 44px; text-align: right; }
+
+  /* ─────────────────────────────────────────
+     SLIDE 03 — REGIONAL MAP
+  ───────────────────────────────────────── */
+  #s03 { background: linear-gradient(135deg, #0b1a13 0%, #0d2118 100%); }
+  .region-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 14px;
+    height: calc(100vh - 160px);
+  }
+  .region-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .region-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .rc-apac::before { background: linear-gradient(90deg, var(--teal), #42c3b0); }
+  .rc-china::before { background: linear-gradient(90deg, #e63946, #ff8fa3); }
+  .rc-india::before { background: linear-gradient(90deg, #f77f00, var(--amber)); }
+  .rc-africa::before { background: linear-gradient(90deg, #588157, #a3b18a); }
+  .rc-latam::before { background: linear-gradient(90deg, #7b2d8b, #c77dff); }
+  .rc-west::before { background: linear-gradient(90deg, #0077b6, #48cae4); }
+
+  .region-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--parchment);
+  }
+  .region-leader {
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    color: var(--gold-light);
+    padding: 3px 8px;
+    background: rgba(201,146,42,0.1);
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+  .region-stat { font-size: 11px; color: rgba(244,237,224,0.65); line-height: 1.5; }
+  .region-share {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 300;
+    color: var(--gold-light);
+    margin-top: auto;
+  }
+  .region-share span { font-size: 14px; color: var(--muted); font-family: 'Fira Code', monospace; }
+
+  /* ─────────────────────────────────────────
+     SLIDE 04 — PAYMENT SYSTEM PROFILES
+  ───────────────────────────────────────── */
+  #s04 { background: var(--ink); }
+  .sys-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .sys-table th {
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    background: rgba(201,146,42,0.05);
+  }
+  .sys-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(201,146,42,0.08);
+    color: rgba(244,237,224,0.8);
+    vertical-align: top;
+  }
+  .sys-table tr:hover td { background: rgba(201,146,42,0.04); }
+  .sys-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    color: var(--parchment);
+    display: block;
+  }
+  .sys-region {
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    color: var(--muted);
+  }
+  .bar-cell { padding-top: 16px !important; }
+  .inline-bar { height: 6px; border-radius: 3px; margin-bottom: 2px; }
+  .bar-label { font-family: 'Fira Code', monospace; font-size: 9px; color: var(--gold-light); }
+
+  /* ─────────────────────────────────────────
+     SLIDE 05 — FINANCIAL INCLUSION
+  ───────────────────────────────────────── */
+  #s05 { background: linear-gradient(160deg, #0b1a13, #0e1f1a); }
+  .inclusion-layout { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; height: 100%; }
+  .bubble-map { display: flex; flex-wrap: wrap; gap: 10px; align-content: flex-start; padding: 10px 0; }
+  .bubble {
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .bubble:hover { transform: scale(1.05); z-index: 10; }
+  .bubble .b-pct {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    color: white;
+    line-height: 1;
+  }
+  .bubble .b-label {
+    font-family: 'Fira Code', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    line-height: 1.2;
+  }
+  .inclusion-right { display: flex; flex-direction: column; gap: 14px; }
+  .inc-stat { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px; }
+  .inc-stat h4 { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; color: var(--parchment); margin-bottom: 6px; }
+  .inc-stat p { font-size: 11px; color: rgba(244,237,224,0.6); line-height: 1.5; }
+  .inc-num { font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 300; color: var(--coral); }
+
+  /* ─────────────────────────────────────────
+     SLIDE 06 — LOCAL vs GLOBAL
+  ───────────────────────────────────────── */
+  #s06 { background: var(--ink); }
+  .versus-layout { display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; height: 100%; }
+  .versus-col { padding: 16px 0; }
+  .versus-divider {
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+    margin: 0 24px;
+    position: relative;
+  }
+  .versus-divider::before {
+    content: 'VS';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-style: italic;
+    color: var(--gold);
+    background: var(--ink);
+    padding: 8px 4px;
+  }
+  .vs-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; margin-bottom: 16px; }
+  .vs-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; margin-bottom: 12px; }
+  .vs-item h5 { font-family: 'Fira Code', monospace; font-size: 9px; color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .vs-item p { font-size: 11px; color: rgba(244,237,224,0.7); line-height: 1.5; }
+  .vs-pro { border-left: 3px solid var(--teal); }
+  .vs-con { border-left: 3px solid var(--coral); }
+  .case-study {
+    background: rgba(42,157,143,0.08);
+    border: 1px solid rgba(42,157,143,0.25);
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .case-study .cs-tag { font-family: 'Fira Code', monospace; font-size: 9px; color: var(--teal); text-transform: uppercase; letter-spacing: 0.1em; }
+  .case-study p { font-size: 11px; color: rgba(244,237,224,0.75); margin-top: 4px; line-height: 1.5; }
+
+  /* ─────────────────────────────────────────
+     SLIDE 07 — TECHNICAL BACKBONE
+  ───────────────────────────────────────── */
+  #s07 { background: linear-gradient(200deg, #0b1a13, #091510); }
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    height: calc(100vh - 170px);
+  }
+  .tech-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .tech-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+  }
+  .tech-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--parchment);
+  }
+  .tech-subtitle {
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .tech-meta { display: flex; flex-wrap: wrap; gap: 5px; margin: 4px 0; }
+  .tech-desc { font-size: 11px; color: rgba(244,237,224,0.65); line-height: 1.5; flex: 1; }
+  .tech-examples { font-family: 'Fira Code', monospace; font-size: 10px; color: var(--gold-light); }
+
+  /* ─────────────────────────────────────────
+     SLIDE 08 — MEASUREMENT FRAMEWORK
+  ───────────────────────────────────────── */
+  #s08 { background: var(--ink); }
+  .measure-layout { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .measure-col h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .measure-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    align-items: flex-start;
+  }
+  .measure-num {
+    font-family: 'Fira Code', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    background: rgba(201,146,42,0.1);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 3px 7px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .measure-text h5 {
+    font-size: 12px;
+    color: var(--parchment);
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .measure-text p {
+    font-size: 10px;
+    color: rgba(244,237,224,0.5);
+    line-height: 1.5;
+  }
+  .measure-col.financial h3 { color: var(--gold-light); }
+  .measure-col.economic h3 { color: var(--teal); }
+  .measure-col.societal h3 { color: var(--coral); }
+
+  /* ─────────────────────────────────────────
+     SLIDE 09 — CULTURAL EQUITY
+  ───────────────────────────────────────── */
+  #s09 { background: linear-gradient(135deg, #100e1a, #0b1a13); }
+  .equity-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; height: 100%; }
+  .equity-left { display: flex; flex-direction: column; gap: 14px; }
+  .equity-right { display: flex; flex-direction: column; gap: 14px; }
+  .equity-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 18px;
+  }
+  .equity-card h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--parchment);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .equity-card p { font-size: 11px; color: rgba(244,237,224,0.65); line-height: 1.6; }
+  .equity-quote {
+    background: rgba(201,146,42,0.06);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 22px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--parchment);
+    line-height: 1.5;
+  }
+  .equity-quote cite {
+    display: block;
+    margin-top: 10px;
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    font-style: normal;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .corridor-table { width: 100%; font-size: 11px; }
+  .corridor-table td { padding: 7px 10px; border-bottom: 1px solid rgba(201,146,42,0.07); }
+  .corridor-table td:first-child { color: var(--parchment); font-weight: 500; }
+  .corridor-table td:last-child { font-family: 'Fira Code', monospace; font-size: 10px; }
+
+  /* ─────────────────────────────────────────
+     SLIDE 10 — SYNTHESIS
+  ───────────────────────────────────────── */
+  #s10 {
+    background: radial-gradient(ellipse at 70% 30%, #1a2e20 0%, var(--ink) 65%);
+    justify-content: center;
+    padding: 0 64px;
+  }
+  .synthesis-inner { max-width: 900px; }
+  .thesis {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 38px;
+    font-weight: 300;
+    line-height: 1.25;
+    color: var(--parchment);
+    margin-bottom: 36px;
+    border-left: 3px solid var(--gold);
+    padding-left: 28px;
+  }
+  .thesis em { font-style: italic; color: var(--gold-light); }
+  .implications {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .impl-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+  }
+  .impl-card .impl-icon { font-size: 20px; margin-bottom: 8px; }
+  .impl-card h5 { font-size: 12px; color: var(--gold-light); margin-bottom: 6px; font-weight: 500; }
+  .impl-card p { font-size: 10px; color: rgba(244,237,224,0.55); line-height: 1.5; }
+  .source-line {
+    font-family: 'Fira Code', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div id="deck">
+  <!-- SLIDE 05 — FINANCIAL INCLUSION         -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="slide active" id="s05">
+    <div class="slide-header">
+      <div>
+        <div class="eyebrow">04 — Who Is Left Out</div>
+        <div class="display" style="font-size:32px">Financial Inclusion Atlas</div>
+      </div>
+      <div class="tag tag-coral">1.3 Billion Unbanked · 2025</div>
+    </div>
+    <div class="slide-body" style="padding-top:18px">
+      <div class="inclusion-layout">
+        <div>
+          <div class="eyebrow" style="margin-bottom:16px">Account Ownership by Region (% adults, 2024)</div>
+          <div class="bubble-map">
+            <!-- Bubble = region, size = approx account ownership -->
+            <div class="bubble" style="width:130px;height:130px;background:radial-gradient(circle at 35% 35%,#42c3b0,#2a9d8f)">
+              <div class="b-pct" style="font-size:28px">83%</div>
+              <div class="b-label" style="font-size:9px;padding:0 8px">East Asia<br>Pacific</div>
+            </div>
+            <div class="bubble" style="width:116px;height:116px;background:radial-gradient(circle at 35% 35%,#f4a261,#e76f51)">
+              <div class="b-pct" style="font-size:24px">79%</div>
+              <div class="b-label" style="font-size:9px">Global Avg</div>
+            </div>
+            <div class="bubble" style="width:122px;height:122px;background:radial-gradient(circle at 35% 35%,#0077b6,#48cae4)">
+              <div class="b-pct" style="font-size:24px">78%</div>
+              <div class="b-label" style="font-size:9px">Europe<br>C. Asia</div>
+            </div>
+            <div class="bubble" style="width:110px;height:110px;background:radial-gradient(circle at 35% 35%,#6a4c93,#9d4edd)">
+              <div class="b-pct" style="font-size:22px">70%</div>
+              <div class="b-label" style="font-size:9px">Latin<br>America</div>
+            </div>
+            <div class="bubble" style="width:100px;height:100px;background:radial-gradient(circle at 35% 35%,#588157,#a3b18a)">
+              <div class="b-pct" style="font-size:20px">58%</div>
+              <div class="b-label" style="font-size:9px">Sub-Saharan<br>Africa</div>
+            </div>
+            <div class="bubble" style="width:88px;height:88px;background:radial-gradient(circle at 35% 35%,#e63946,#ff8fa3)">
+              <div class="b-pct" style="font-size:18px">53%</div>
+              <div class="b-label" style="font-size:9px">MENA</div>
+            </div>
+          </div>
+          <div style="margin-top:20px;background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:16px">
+            <div class="eyebrow" style="margin-bottom:10px">Gender Gap in Account Ownership (2024)</div>
+            <div class="flow-item">
+              <div class="flow-label">MENA</div>
+              <div class="flow-bar" style="background:var(--coral);width:40%"></div>
+              <div class="flow-val" style="color:var(--coral)">−18pp</div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-label">Sub-Saharan</div>
+              <div class="flow-bar" style="background:var(--amber);width:30%"></div>
+              <div class="flow-val" style="color:var(--amber)">−12pp</div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-label">South Asia</div>
+              <div class="flow-bar" style="background:var(--gold);width:20%"></div>
+              <div class="flow-val" style="color:var(--gold)">−8pp</div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-label">OECD</div>
+              <div class="flow-bar" style="background:var(--teal);width:4%"></div>
+              <div class="flow-val" style="color:var(--teal)">−1pp</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="inclusion-right">
+          <div class="inc-stat" style="border-left:3px solid var(--coral)">
+            <div class="inc-num">820M</div>
+            <h4>Unbanked in APAC</h4>
+            <p>Largest raw unbanked population due to rural Asia — despite China and India's digital leaps, rural peripheries remain excluded.</p>
+          </div>
+          <div class="inc-stat" style="border-left:3px solid var(--teal)">
+            <div class="inc-num" style="color:var(--teal)">40%</div>
+            <h4>Africa: Mobile Money Leader</h4>
+            <p>Sub-Saharan Africa holds the world's highest mobile money penetration (40% of adults), bypassing traditional banking entirely. M-Pesa's agent network reaches where banks never went.</p>
+          </div>
+          <div class="inc-stat" style="border-left:3px solid var(--gold)">
+            <div class="inc-num" style="color:var(--gold-light)">62%</div>
+            <h4>Digital Payment Use in LMICs</h4>
+            <p>Up from 34% in 2014 — the fastest financial shift in recorded history, driven by mobile infrastructure rather than bank branches.</p>
+          </div>
+          <div class="inc-stat">
+            <h4>Why People Remain Excluded</h4>
+            <p style="margin-bottom:6px">Top reported barriers (Findex 2025):</p>
+            <div style="display:flex;flex-wrap:wrap;gap:5px">
+              <span class="tag tag-coral">No money for fees</span>
+              <span class="tag tag-amber">No documentation</span>
+              <span class="tag tag-gold">No nearby institution</span>
+              <span class="tag tag-teal">Distrust of banks</span>
+              <span class="tag tag-coral">Family member has one</span>
+              <span class="tag tag-amber">Religious concerns</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- SLIDE 11 — SDG × REGION HEATMAP        -->
+  <!-- ══════════════════════════════════════ -->
+  <div class="slide" id="s11">
+    <div class="slide-header">
+      <div>
+        <div class="eyebrow">10 — Systemic Mirror</div>
+        <div class="display" style="font-size:30px">Payments Mapped onto the UN–World Bank Development Taxonomy</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <span class="tag tag-teal">SDGs 2030</span>
+        <span class="tag tag-gold">WB Findex · HCI · B-READY</span>
+      </div>
+    </div>
+    <div class="slide-body" style="padding-top:14px;display:flex;flex-direction:column;gap:14px">
+
+      <!-- ── LEGEND ── -->
+      <div style="display:flex;align-items:center;gap:20px;font-family:'Fira Code',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase">
+        <span style="color:var(--muted)">Payment contribution to SDG target:</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:2px;background:#1a4a2e;display:inline-block;border:1px solid #2a9d8f"></span> Strong</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:2px;background:#1e3a1a;display:inline-block;border:1px solid #5a8a3a"></span> Good</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:2px;background:#2a2410;display:inline-block;border:1px solid #c9922a"></span> Mixed</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:2px;background:#2a1810;display:inline-block;border:1px solid #e07040"></span> Lagging</span>
+        <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:2px;background:#2a1010;display:inline-block;border:1px solid #c0394a"></span> Critical</span>
+        <span style="margin-left:8px;color:rgba(244,237,224,0.3)">|</span>
+        <span style="color:rgba(244,237,224,0.4)">Cells show: payment system contribution + key data point</span>
+      </div>
+
+      <!-- ══ HEATMAP TABLE ══ -->
+      <div style="flex:1;overflow:auto">
+        <table id="heatmap" style="width:100%;border-collapse:separate;border-spacing:3px 3px;table-layout:fixed">
+          <colgroup>
+            <col style="width:18%">
+            <col style="width:13.67%">
+            <col style="width:13.67%">
+            <col style="width:13.67%">
+            <col style="width:13.67%">
+            <col style="width:13.67%">
+            <col style="width:13.67%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="font-family:'Fira Code',monospace;font-size:9px;color:var(--gold);letter-spacing:0.12em;text-transform:uppercase;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)">SDG Target → Region</th>
+              <th class="rh rh-china">🇨🇳 China / EAP</th>
+              <th class="rh rh-india">🇮🇳 India / S.Asia</th>
+              <th class="rh rh-africa">🌍 Sub-Saharan Africa</th>
+              <th class="rh rh-latam">🌎 Latin America</th>
+              <th class="rh rh-mena">🌐 MENA / SE Asia</th>
+              <th class="rh rh-west">🇪🇺🇺🇸 N.America / Europe</th>
+            </tr>
+          </thead>
+          <tbody id="hm-body">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ══ WB INDEX BARS ══ -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+
+        <!-- Findex -->
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+            <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--teal);letter-spacing:0.12em;text-transform:uppercase">WB Findex 2025 — Account Ownership %</div>
+            <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--muted)">SDG 8.10.2 primary indicator</div>
+          </div>
+          <div id="findex-bars"></div>
+        </div>
+
+        <!-- HCI -->
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+            <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--amber);letter-spacing:0.12em;text-transform:uppercase">WB Human Capital Index (HCI) 0–1</div>
+            <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--muted)">Productivity of next generation</div>
+          </div>
+          <div id="hci-bars"></div>
+        </div>
+
+        <!-- B-READY -->
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:6px;padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+            <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--gold-light);letter-spacing:0.12em;text-transform:uppercase">WB B-READY 2025 — Financial Services Pillar (0–100)</div>
+            <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--muted)">Replaces Doing Business 2021</div>
+          </div>
+          <div id="bready-bars"></div>
+        </div>
+
+      </div>
+
+      <!-- ── footnote ── -->
+      <div style="font-family:'Fira Code',monospace;font-size:9px;color:var(--muted);letter-spacing:0.06em;border-top:1px solid var(--border);padding-top:8px">
+        SDG targets: 1.4 (financial resource access) · 5.a (women's financial equality) · 8.10 (digital payment inclusion) · 9.3 (SME finance access) · 10.c (remittance cost &lt;3%) · 16.6 (transparent institutions) · 17.3 (mobilise cross-border finance) ·
+        WB Findex 2025 · HCI via World Bank Open Data 2026 · B-READY 2025 Financial Services Pillar (101 economies interim edition) · Scores are regional aggregates; intra-regional variation is significant.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<style>
+/* ── heatmap shared ── */
+#heatmap th.rh {
+  font-family: 'Fira Code', monospace;
+  font-size: 10px;
+  color: var(--parchment);
+  letter-spacing: 0.06em;
+  padding: 8px 10px;
+  text-align: center;
+  border-radius: 4px 4px 0 0;
+  border-bottom: 1px solid var(--border);
+}
+.rh-china  { background: rgba(230,57,70,0.12);  border: 1px solid rgba(230,57,70,0.3) }
+.rh-india  { background: rgba(244,162,97,0.12); border: 1px solid rgba(244,162,97,0.3) }
+.rh-africa { background: rgba(88,129,87,0.15);  border: 1px solid rgba(88,129,87,0.4) }
+.rh-latam  { background: rgba(123,45,139,0.15); border: 1px solid rgba(123,45,139,0.35) }
+.rh-mena   { background: rgba(244,162,97,0.08); border: 1px solid rgba(244,162,97,0.2) }
+.rh-west   { background: rgba(0,119,182,0.12);  border: 1px solid rgba(0,119,182,0.3) }
+
+.hm-row-label {
+  padding: 7px 10px;
+  border-radius: 4px;
+  background: rgba(201,146,42,0.06);
+  border: 1px solid var(--border);
+}
+.hm-sdg-num {
+  font-family: 'Fira Code', monospace;
+  font-size: 10px;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  display: block;
+}
+.hm-sdg-title {
+  font-size: 10px;
+  color: var(--parchment);
+  font-weight: 500;
+  display: block;
+  margin: 2px 0 1px;
+  line-height: 1.3;
+}
+.hm-sdg-sub {
+  font-family: 'Fira Code', monospace;
+  font-size: 8px;
+  color: var(--muted);
+  display: block;
+  line-height: 1.3;
+}
+.hm-cell {
+  padding: 6px 8px;
+  border-radius: 4px;
+  text-align: center;
+  cursor: default;
+  transition: transform 0.15s;
+  vertical-align: top;
+}
+.hm-cell:hover { transform: scale(1.03); z-index:5; position:relative; }
+.hm-cell-inner { display:flex; flex-direction:column; gap:2px; align-items:center; }
+.hm-score {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+}
+.hm-label {
+  font-family: 'Fira Code', monospace;
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+.hm-detail {
+  font-size: 9px;
+  color: rgba(244,237,224,0.6);
+  line-height: 1.3;
+  margin-top: 2px;
+}
+
+/* heat colours */
+.heat-4 { background: #0d3322; border: 1px solid #2a9d8f; color: #4ecdc0; }
+.heat-3 { background: #122a12; border: 1px solid #4a7a2a; color: #8ecf6a; }
+.heat-2 { background: #2a2208; border: 1px solid #c9922a; color: #e8b96a; }
+.heat-1 { background: #2a1808; border: 1px solid #d06530; color: #f4956a; }
+.heat-0 { background: #280d0d; border: 1px solid #b0283a; color: #e05060; }
+
+/* wb index bars */
+.wb-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:7px; }
+.wb-bar-label { font-family:'Fira Code',monospace; font-size:9px; color:var(--parchment); width:110px; flex-shrink:0; }
+.wb-bar-track { flex:1; height:7px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden; }
+.wb-bar-fill { height:100%; border-radius:4px; }
+.wb-bar-val { font-family:'Fira Code',monospace; font-size:9px; color:var(--gold-light); width:36px; text-align:right; }
+</style>
+
+<!-- NAV -->
+<div id="nav">
+  <button id="btn-prev">← prev</button>
+  <div class="dots" id="dots"></div>
+  <span id="slide-counter">1 / 2</span>
+  <button id="btn-next">next →</button>
+</div>
+
+<script>
+  // ── HEATMAP DATA ──────────────────────────────────────────────────
+  // Rows = SDG targets; Cols = regions (China/EAP, India, Africa, LatAm, MENA/SEA, West)
+  // score: 0=Critical 1=Lagging 2=Mixed 3=Good 4=Strong
+  const REGIONS = ['China / EAP','India / S.Asia','Sub-Saharan Africa','Latin America','MENA / SE Asia','N.Am + Europe'];
+  const SDG_ROWS = [
+    {
+      num:'SDG 1.4', title:'No Poverty — Financial Resource Access',
+      sub:'Equal rights to economic resources & basic services',
+      scores:[3,3,1,2,1,4],
+      labels:['89% banked','89% banked','58% banked','70% banked','53% banked','95%+ banked'],
+      details:['Super-app credit scores open credit to low-income','Jan Dhan: 500M+ zero-balance accounts opened','40% still unbanked; cash is poverty trap','60% cash dependency; informal economy dominance','MENA: highest exclusion concentration globally','Universal access but not universal affordability']
+    },
+    {
+      num:'SDG 5.a', title:'Gender Equality — Women\'s Financial Rights',
+      sub:'Equal access to financial services & property',
+      scores:[3,2,1,2,0,4],
+      labels:['~3pp gap','~7pp gap','−12pp gap','~5pp gap','−18pp gap','~1pp gap'],
+      details:['Digital IDs reduced gender gap significantly','Rural women still 15pp below men','Togo +25pp gap; Nigeria +22pp; widening','Mobile money closing gap in Brazil','Worst gender gap globally; cultural barriers','Legal parity; wage gap reflected in savings']
+    },
+    {
+      num:'SDG 8.10', title:'Decent Work — Digital Payment Inclusion',
+      sub:'Access to banking, insurance & financial services for all',
+      scores:[4,4,2,3,1,4],
+      labels:['$80T / yr','172B txns/yr','Mobile money','PIX: 252M/day','GCash/Grab rise','Card-dominant'],
+      details:['96% mobile pay adoption; world\'s largest ecosystem','UPI: 49% of all global real-time payments volume','M-Pesa $310B; but 90% Africa txns still cash','PIX 78% YoY; Mercado Pago 50M+ users','Super-apps growing but 47% unbanked in MENA','SEPA Instant: 3B → 30B txns by 2028']
+    },
+    {
+      num:'SDG 9.3', title:'Industry & Innovation — SME Finance Access',
+      sub:'Small enterprises integrated into value chains & markets',
+      scores:[3,3,1,2,1,4],
+      labels:['Ant MSME credit','Zero MDR mandate','Agent banking','Mercado Crédito','Fragmented','Open Banking'],
+      details:['Alipay credit scoring for 40M+ micro-businesses','UPI zero MDR: levels playing field for street vendors','Most SSA SMEs remain cash-only; no digital footprint','BNPL & Mercado Pago credit for informal sector','B-READY: Financial Services pillar weakest in MENA','PSD2 opens banking data for SME lending']
+    },
+    {
+      num:'SDG 10.c', title:'Reduced Inequalities — Remittance Cost <3%',
+      sub:'Reduce transaction costs of migrant remittances to <3%',
+      scores:[2,3,0,1,0,3],
+      labels:['~2–3%','~1.5% SG→IN','8–30%','~5%','~8–12%','~1–2% SEPA'],
+      details:['China outbound low; inbound from Africa corridors high','UPI cross-border enabling new low-cost corridors','Africa-Africa: world\'s most expensive; some at 30%','US→Mexico: $68B flow at 4.94%; still above SDG target','UK→Nigeria ~8%; remittance = lifeline tax on diaspora','Intra-EU near-free; non-EU corridors still costly']
+    },
+    {
+      num:'SDG 16.6', title:'Strong Institutions — Transparent Digital Governance',
+      sub:'Accountable & transparent public institutions',
+      scores:[2,3,1,2,1,4],
+      labels:['Closed ecosystem','Aadhaar stack','Fragmented','Pix by BACEN','Varying','PSD2 / Open B.'],
+      details:['State surveillance embedded; low autonomy for users','India Stack: open, interoperable, auditable public infra','Many payment regulators lack capacity or independence','Brazil: BACEN model — open, mandated, consumer-first','Gulf states piloting CBDCs but governance opaque','GDPR + PSD2: strongest consumer data rights globally']
+    },
+    {
+      num:'SDG 17.3', title:'Partnerships — Cross-Border Finance Mobilisation',
+      sub:'Mobilise resources for developing countries; interoperability',
+      scores:[3,3,1,2,2,4],
+      labels:['Belt & Road pay','UPI ASEAN links','Isolated corridors','Regional gaps','mBridge pilot','G20 framework'],
+      details:['China exporting payment rails to 50+ BRI countries','UPI linking to Singapore, UAE, France, Mauritius','Africa-Africa rails least developed globally','Mercosur + LATAM instant pay interop nascent','mBridge multi-CBDC pilot: China, UAE, HK, Thailand','G20 cross-border payments roadmap; SWIFT ISO 20022']
+    }
+  ];
+
+  // heat label text
+  const HEAT_TEXT = ['Critical','Lagging','Mixed','Good','Strong'];
+
+  function buildHeatmap() {
+    const tbody = document.getElementById('hm-body');
+    SDG_ROWS.forEach(row => {
+      const tr = document.createElement('tr');
+      // label cell
+      const tdLabel = document.createElement('td');
+      tdLabel.className = 'hm-row-label';
+      tdLabel.innerHTML = `<span class="hm-sdg-num">${row.num}</span><span class="hm-sdg-title">${row.title}</span><span class="hm-sdg-sub">${row.sub}</span>`;
+      tr.appendChild(tdLabel);
+      // data cells
+      row.scores.forEach((s, i) => {
+        const td = document.createElement('td');
+        td.className = `hm-cell heat-${s}`;
+        td.innerHTML = `<div class="hm-cell-inner">
+          <span class="hm-score">${['⚠','↓','~','↑','✦'][s]}</span>
+          <span class="hm-label">${HEAT_TEXT[s]}</span>
+          <span style="font-family:'Fira Code',monospace;font-size:8px;margin-top:1px">${row.labels[i]}</span>
+          <span class="hm-detail">${row.details[i]}</span>
+        </div>`;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+  }
+
+  function buildWBBars() {
+    // Findex data (account ownership %)
+    const findex = [
+      { label:'China / EAP',       val:83, color:'rgba(230,57,70,0.8)'   },
+      { label:'India / S.Asia',    val:89, color:'rgba(244,162,97,0.8)'  },
+      { label:'Sub-Saharan Africa',val:58, color:'rgba(88,129,87,0.8)'   },
+      { label:'Latin America',     val:70, color:'rgba(123,45,139,0.8)'  },
+      { label:'MENA / SE Asia',    val:53, color:'rgba(200,120,60,0.8)'  },
+      { label:'N.Am + Europe',     val:95, color:'rgba(0,150,200,0.8)'   },
+    ];
+    const hci = [
+      { label:'China / EAP',       val:0.65, color:'rgba(230,57,70,0.8)'  },
+      { label:'India / S.Asia',    val:0.49, color:'rgba(244,162,97,0.8)' },
+      { label:'Sub-Saharan Africa',val:0.40, color:'rgba(88,129,87,0.8)'  },
+      { label:'Latin America',     val:0.56, color:'rgba(123,45,139,0.8)' },
+      { label:'MENA / SE Asia',    val:0.55, color:'rgba(200,120,60,0.8)' },
+      { label:'N.Am + Europe',     val:0.80, color:'rgba(0,150,200,0.8)'  },
+    ];
+    const bready = [
+      { label:'China / EAP',       val:62, color:'rgba(230,57,70,0.8)'  },
+      { label:'India / S.Asia',    val:54, color:'rgba(244,162,97,0.8)' },
+      { label:'Sub-Saharan Africa',val:38, color:'rgba(88,129,87,0.8)'  },
+      { label:'Latin America',     val:55, color:'rgba(123,45,139,0.8)' },
+      { label:'MENA / SE Asia',    val:46, color:'rgba(200,120,60,0.8)' },
+      { label:'N.Am + Europe',     val:74, color:'rgba(0,150,200,0.8)'  },
+    ];
+
+    function renderBars(containerId, data, max) {
+      const el = document.getElementById(containerId);
+      data.forEach(d => {
+        const pct = (d.val / max * 100).toFixed(0);
+        el.innerHTML += `<div class="wb-bar-row">
+          <div class="wb-bar-label">${d.label}</div>
+          <div class="wb-bar-track"><div class="wb-bar-fill" style="width:${pct}%;background:${d.color}"></div></div>
+          <div class="wb-bar-val">${d.val}${max===1?'':max===100?'%':''}</div>
+        </div>`;
+      });
+    }
+    renderBars('findex-bars', findex, 100);
+    renderBars('hci-bars', hci, 1);
+    renderBars('bready-bars', bready, 100);
+  }
+
+  buildHeatmap();
+  buildWBBars();
+  // ── END HEATMAP ────────────────────────────────────────────────────
+
+  const slides = document.querySelectorAll('.slide');
+  const dotsEl = document.getElementById('dots');
+  const counter = document.getElementById('slide-counter');
+  let cur = 0;
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' on' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[cur].classList.remove('active');
+    document.querySelectorAll('.dot')[cur].classList.remove('on');
+    cur = (n + slides.length) % slides.length;
+    slides[cur].classList.add('active');
+    document.querySelectorAll('.dot')[cur].classList.add('on');
+    counter.textContent = `${cur + 1} / ${slides.length}`;
+  // init counter display on load
+  counter.textContent = `1 / ${slides.length}`;
+  }
+
+  document.getElementById('btn-next').onclick = () => goTo(cur + 1);
+  document.getElementById('btn-prev').onclick = () => goTo(cur - 1);
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(cur + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') goTo(cur - 1);
+  });
+
+  // Touch swipe
+  let tx = 0;
+  document.addEventListener('touchstart', e => tx = e.touches[0].clientX);
+  document.addEventListener('touchend', e => {
+    const dx = tx - e.changedTouches[0].clientX;
+    if (Math.abs(dx) > 50) dx > 0 ? goTo(cur + 1) : goTo(cur - 1);
+  });
+</script>
+</body>
+</html>
